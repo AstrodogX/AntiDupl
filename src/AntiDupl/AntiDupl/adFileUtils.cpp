@@ -26,6 +26,7 @@
 #include <shellapi.h>
 
 #include <io.h>
+#include <regex>
 
 #include "adPerformance.h"
 #include "adFileUtils.h"
@@ -487,7 +488,7 @@ namespace ad
     {
 		TString uniquePath;
 		const int SIMILAR_PREFIX_SIZE = 16;
-		const TChar *SIMILAR_PREFIX_FORMAT = TEXT("_%u");
+		const TChar *SIMILAR_PREFIX_FORMAT = TEXT(" %u");
 		TChar buffer[SIMILAR_PREFIX_SIZE];
 		unsigned long counter = 2;
 
@@ -505,7 +506,7 @@ namespace ad
     {
 		TString uniquePath;
 		const int SIMILAR_PREFIX_SIZE = 16;
-		const TChar *SIMILAR_PREFIX_FORMAT = TEXT("_%u");
+		const TChar *SIMILAR_PREFIX_FORMAT = TEXT(" %u");
 		TChar buffer[SIMILAR_PREFIX_SIZE];
 		unsigned long counter = 2;
 
@@ -610,5 +611,168 @@ namespace ad
 									digit,
                                     leadingZeros,
 									pathForRename);
+	}
+
+  size_t calculateIntegerLength(__int64 value)
+  {
+    char buffer[65];
+    return _i64toa_s(value, buffer, 65, 10) == 0 ? strnlen(buffer, _countof(buffer)) : 0;
+  }
+
+  size_t calculateIntegerLength(unsigned __int64 value)
+  {
+    char buffer[65];
+    return _ui64toa_s(value, buffer, 65, 10) == 0 ? strnlen(buffer, _countof(buffer)) : 0;
+  }
+
+  bool searchNumberSuffix(const TString &name, unsigned __int64 &number, TString &basename, size_t &number_length)
+  {
+    size_t length = name.length();
+    if (length == 0) {
+      return false;
+    }
+
+    size_t position = length;
+    do {
+      if (iswdigit(name[--position]) == false) {
+        ++position;
+        break;
+      }
+    } while (position > 0);
+
+    if (position == length) {
+      return false;
+    }
+
+    TString chunk = name.substr(position, length - position);
+    number = _wcstoui64(chunk.c_str(), nullptr, 10);
+    if (number == _UI64_MAX) {
+      return false;
+    }
+
+    basename = name.substr(0, position);
+    number_length = chunk.length();
+
+    return true;
+  }
+
+	bool searchNumberSuffix(const TPath &path, unsigned __int64 &number, TString &basename, size_t &number_length)
+	{
+		return searchNumberSuffix(path.GetName(false), number, basename, number_length);
+	}
+
+	TString removeNumberSuffix(const TString &name)
+	{
+		unsigned __int64 result;
+		TString basename = name;
+		basename.trimRight();
+		size_t length;
+		if (searchNumberSuffix(basename, result, basename, length)) {
+			basename.trimRight();
+			return basename;
+		}
+		return name;
+	}
+
+	TString removeNumberSuffix(const TPath &path)
+	{
+		return CreatePath(path.GetDirectory(), removeNumberSuffix(path.GetName(false)) + path.GetExtension());
+	}
+
+	TString changeNumberSuffix(const TString &name, int delta, bool force, bool *changed)
+	{
+    if (delta == 0) {
+      if (changed) {
+        *changed = false;
+      }
+      return name;
+    }
+
+		unsigned __int64 result;
+		TString basename = name;
+		basename.trimRight();
+		size_t length;
+
+		if (searchNumberSuffix(basename, result, basename, length) == false) {
+      if (force && delta > 0) {
+        result = 0;
+        basename = name;
+        basename.push_back(' ');
+        length = 0;
+      } else {
+        if (changed) {
+          *changed = false;
+        }
+        return name;
+      }      
+		}
+
+		if (delta < 0 && -delta >= result) {
+      if (changed) {
+        *changed = true;
+      }
+			basename.trimRight();
+			return basename;
+		}
+
+		result += delta;
+
+		char buffer[65];
+		if (_ui64toa_s(result, buffer, 65, 10) != 0) {
+      if (changed) {
+        *changed = false;
+      }
+			return name;
+		}
+
+		size_t new_length = strnlen(buffer, _countof(buffer));
+		if (new_length++ < length) {
+			basename.push_back('0');
+		}
+
+    if (changed) {
+      *changed = true;
+    }
+		return basename + TString(buffer);
+	}
+
+  TString changeNumberSuffix(const TPath &path, int delta, bool force, bool *changed)
+  {
+    return CreatePath(path.GetDirectory(), changeNumberSuffix(path.GetName(false), delta, force, changed) + path.GetExtension());
+  }
+
+	static const std::wregex patterns[] = { std::wregex(L"\\[[\\w]+_\\d+\\]\\s*(.*)"), std::wregex(L".*- (.*)\\s*\\([\\w]+_\\d+\\)") };
+
+	static bool matchPattern(const TString &text, const std::wregex &pattern, std::wcmatch &match, int index = 1)
+	{
+		return std::regex_match(text.c_str(), match, pattern) && (match.size() - 1 <= index);
+	}
+
+	static bool matchPatterns(const TString &text, std::wcmatch &match, int index = 1)
+	{
+		for (const auto &pattern : patterns) {
+			if (matchPattern(text, pattern, match, index)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	TString extractPatternGroup(const TString &text, int index)
+	{
+		std::wcmatch match;
+		if (matchPatterns(text, match, index)) {
+			return TString(match[index].first, match[index].second);
+		}
+		return TString();
+	}
+
+	TString replacePatternGroup(const TString &text, const TString &replace, int index)
+	{
+		std::wcmatch match;
+		if (matchPatterns(text, match, index)) {
+			return TString(match[0].first, match[index].first) + replace + TString(match[index].second, match[0].second);
+		}
+		return text;
 	}
 }

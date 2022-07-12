@@ -137,6 +137,30 @@ namespace ad
 		}
 	}
 
+	void TString::trimLeft()
+	{
+		if (this->length() == 0) {
+			return;
+		}
+		TString::const_iterator it = this->begin();
+		while (it != this->end() && iswspace(*it)) {
+			++it;
+		}
+		this->erase(this->begin(), it);
+	}
+
+	void TString::trimRight()
+	{
+		if (this->length() == 0) {
+			return;
+		}
+		TString::const_reverse_iterator it = this->rbegin();
+		while (it != this->rend() && iswspace(*it)) {
+			it++;
+		}
+		this->erase(it.base(), this->end());
+	}
+
 	std::wstring TString::ToWString() const
 	{
 		return TString(*this);

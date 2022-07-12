@@ -53,6 +53,9 @@ namespace AntiDupl.NET
         private ToolStripMenuItem m_moveGroupToNeighbourItem;
         private ToolStripMenuItem m_renameGroupAsNeighbourItem;
 
+    private ToolStripMenuItem m_incNumberItem;
+    private ToolStripMenuItem m_decNumberItem;
+    private ToolStripMenuItem m_removeNumberItem;
         
         public ImagePreviewContextMenu(CoreLib core, Options options, CoreOptions coreOptions, ImagePreviewPanel imagePreviewPanel, ResultsListView resultsListView)
         {
@@ -83,6 +86,18 @@ namespace AntiDupl.NET
             m_moveImageAndRenameToNeighbourItem = InitFactory.MenuItem.Create(null, null, new EventHandler(MoveAndRenameToNeighbour));
             m_moveGroupToNeighbourItem = InitFactory.MenuItem.Create(null, null, MoveGroupToNeighbour);
             m_renameGroupAsNeighbourItem = InitFactory.MenuItem.Create(null, null, RenameCurrentGroupAsNeighbour);
+             
+            m_incNumberItem = InitFactory.MenuItem.Create(null, null, (object sender, EventArgs e) => {
+              m_resultsListView.MakeAction(CoreDll.LocalActionType.IncNumber, m_imagePreviewPanel.RenameCurrentType);
+            });
+
+            m_decNumberItem = InitFactory.MenuItem.Create(null, null, (object sender, EventArgs e) => {
+              m_resultsListView.MakeAction(CoreDll.LocalActionType.DecNumber, m_imagePreviewPanel.RenameCurrentType);
+            });
+
+            m_removeNumberItem = InitFactory.MenuItem.Create(null, null, (object sender, EventArgs e) => {
+              m_resultsListView.MakeAction(CoreDll.LocalActionType.RemoveNumber, m_imagePreviewPanel.RenameCurrentType);
+            });
             
             Items.Add(new ToolStripSeparator());
         }
@@ -112,6 +127,10 @@ namespace AntiDupl.NET
                 Items.Add(m_moveImageToNeighbourItem);
                 Items.Add(m_moveImageAndRenameToNeighbourItem);
             }
+            Items.Add(new ToolStripSeparator());
+            Items.Add(m_incNumberItem);
+            Items.Add(m_decNumberItem);
+            Items.Add(m_removeNumberItem);
             if (MoveGroupEnable())
             {
                 Items.Add(new ToolStripSeparator());
@@ -136,6 +155,10 @@ namespace AntiDupl.NET
             m_moveImageAndRenameToNeighbourItem.Text = s.ImagePreviewContextMenu_MoveAndRenameImageToNeighbourItem_Text;
             m_moveGroupToNeighbourItem.Text = s.ImagePreviewContextMenu_MoveGroupToNeighbourItem_Text;
             m_renameGroupAsNeighbourItem.Text = s.ImagePreviewContextMenu_RenameGroupAsNeighbourItem_Text;
+
+          m_removeNumberItem.Text = s.Value("menu/number/remove");
+          m_incNumberItem.Text = s.Value("menu/number/inc");
+          m_decNumberItem.Text = s.Value("menu/number/dec");
         }
 
         private void OpenImage(object sender, EventArgs e)

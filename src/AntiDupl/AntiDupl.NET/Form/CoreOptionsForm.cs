@@ -26,10 +26,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using AntiDupl.NET.Controls;
 
 namespace AntiDupl.NET
 {
-    public class CoreOptionsForm : Form
+	public class CoreOptionsForm : Form
     {
         static public int THRESHOLD_DIFFERENCE_MAX_SQUARED_SUM = 15;
         static public int THRESHOLD_DIFFERENCE_MAX_SSIM = 50;
@@ -80,22 +81,12 @@ namespace AntiDupl.NET
 
         private TabPage m_searchTabPage;
         private GroupBox m_searchFileTypeGroupBox;
-        private CheckBox m_bmpCheckBox;
-        private CheckBox m_gifCheckBox;
-        private CheckBox m_jpegCheckBox;
-        private CheckBox m_pngCheckBox;
-        private CheckBox m_tiffCheckBox;
-        private CheckBox m_emfCheckBox;
-        private CheckBox m_wmfCheckBox;
-        private CheckBox m_exifCheckBox;
-        private CheckBox m_iconCheckBox;
-        private CheckBox m_jp2CheckBox;
-        private CheckBox m_psdCheckBox;
-        private CheckBox m_ddsCheckBox;
-        private CheckBox m_tgaCheckBox;
-        private CheckBox m_webpCheckBox;
+        private Dictionary<string, CheckBox> m_searchTypes = new Dictionary<string, CheckBox>();
         private CheckBox m_searchSystemCheckBox;
         private CheckBox m_searchHiddenCheckBox;
+
+        private TabPage m_namingTabPage;
+        private LabeledTextEdit m_namingNumberSeparator;
 
         private TabPage m_advancedTabPage;
         private CheckBox m_deleteToRecycleBinCheckBox;
@@ -168,6 +159,8 @@ namespace AntiDupl.NET
 
             InitilizeSearchTabPage();
 
+            InitilizeNamingTabPage();
+
             InitilizeAdvancedTabPage();
 
             InitilizeHighlightTabPage();
@@ -235,12 +228,12 @@ namespace AntiDupl.NET
 
             m_minimalImageSizeLabeledIntegerEdit = new LabeledIntegerEdit(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT, OnOptionChanged);
             m_minimalImageSizeLabeledIntegerEdit.Min = 0;
-            m_minimalImageSizeLabeledIntegerEdit.Default = m_defaultCoreOptions.compareOptions.minimalImageSize;
+            m_minimalImageSizeLabeledIntegerEdit.Value = m_defaultCoreOptions.compareOptions.minimalImageSize;
             checkTableLayoutPanel.Controls.Add(m_minimalImageSizeLabeledIntegerEdit, 0, 7);
 
             m_maximalImageSizeLabeledIntegerEdit = new LabeledIntegerEdit(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT, OnOptionChanged);
             m_maximalImageSizeLabeledIntegerEdit.Min = 0;
-            m_maximalImageSizeLabeledIntegerEdit.Default = m_defaultCoreOptions.compareOptions.maximalImageSize;
+            m_maximalImageSizeLabeledIntegerEdit.Value = m_defaultCoreOptions.compareOptions.maximalImageSize;
             checkTableLayoutPanel.Controls.Add(m_maximalImageSizeLabeledIntegerEdit, 0, 8);
 
             m_compareInsideOneFolderCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
@@ -281,73 +274,62 @@ namespace AntiDupl.NET
             defectTableLayoutPanel.Controls.Add(m_blurringThresholdLabeledComboBox, 0, 5);
         }
 
-        private void InitilizeSearchTabPage()
-        {
-            m_searchTabPage = new TabPage();
-            m_mainTabControl.Controls.Add(m_searchTabPage);
+		private void InitilizeSearchTabPage()
+		{
+			m_searchTabPage = new TabPage();
+			m_mainTabControl.Controls.Add(m_searchTabPage);
 
-            TableLayoutPanel searchTableLayoutPanel = InitFactory.Layout.Create(1, 4, 5);
-            searchTableLayoutPanel.AutoScroll = true;
-            m_searchTabPage.Controls.Add(searchTableLayoutPanel);
+			TableLayoutPanel searchTableLayoutPanel = InitFactory.Layout.Create(1, 4, 5);
+			searchTableLayoutPanel.AutoScroll = true;
+      m_searchTabPage.Controls.Add(searchTableLayoutPanel);
 
-            m_searchFileTypeGroupBox = new GroupBox();
-            m_searchFileTypeGroupBox.Size = new System.Drawing.Size(200, 140);
-            searchTableLayoutPanel.Controls.Add(m_searchFileTypeGroupBox, 0, 0);
+			m_searchFileTypeGroupBox = new GroupBox {
+				AutoSize = true,
+				Dock = DockStyle.Top
+			};
+			searchTableLayoutPanel.Controls.Add(m_searchFileTypeGroupBox, 0, 0);
 
-            TableLayoutPanel searchFileTypeTableLayoutPanel = InitFactory.Layout.Create(3, 5, 5);
-            searchFileTypeTableLayoutPanel.AutoScroll = true;
-            m_searchFileTypeGroupBox.Controls.Add(searchFileTypeTableLayoutPanel);
+      {
+        FlowLayoutPanel layout = new FlowLayoutPanel {
+          Location = new System.Drawing.Point(10, 20),
+          AutoSize = true,
+          AutoSizeMode = AutoSizeMode.GrowAndShrink,
+          Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
+          Padding = new Padding(5, 5, 5, 0)
+        };
 
-            m_bmpCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_bmpCheckBox, 0, 0);
+        string[] types = { "bmp", "gif", "jpeg", "png", "tiff", "emf", "wmf", "exif", "icon", "jp2", "psd", "dds", "tga", "webp" };
 
-            m_gifCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_gifCheckBox, 0, 1);
-
-            m_jpegCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_jpegCheckBox, 0, 2);
-
-            m_pngCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_pngCheckBox, 0, 3);
-
-            m_tiffCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_tiffCheckBox, 0, 4);
-
-            m_emfCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_emfCheckBox, 1, 0);
-
-            m_wmfCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_wmfCheckBox, 1, 1);
-
-            m_exifCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_exifCheckBox, 1, 2);
-
-            m_iconCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_iconCheckBox, 1, 3);
-
-            m_jp2CheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_jp2CheckBox, 1, 4);
-
-            m_psdCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_psdCheckBox, 2, 0);
-
-            m_ddsCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_ddsCheckBox, 2, 1);
-
-            m_tgaCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_tgaCheckBox, 2, 2);
-
-            m_webpCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchFileTypeTableLayoutPanel.Controls.Add(m_webpCheckBox, 2, 3);
-
-            m_searchSystemCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchTableLayoutPanel.Controls.Add(m_searchSystemCheckBox, 0, 1);
-
-            m_searchHiddenCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
-            searchTableLayoutPanel.Controls.Add(m_searchHiddenCheckBox, 0, 2);
+				for (int i = 0; i < types.Length; ++i) {
+          CheckBox box = InitFactory.CheckBox.Create(OnOptionChanged);
+          layout.Controls.Add(box);
+          m_searchTypes[types[i]] = box;
         }
+        
+        m_searchFileTypeGroupBox.Controls.Add(layout);
+      }
 
-        private void InitilizeAdvancedTabPage()
+      m_searchSystemCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
+			searchTableLayoutPanel.Controls.Add(m_searchSystemCheckBox, 0, 1);
+
+			m_searchHiddenCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
+			searchTableLayoutPanel.Controls.Add(m_searchHiddenCheckBox, 0, 2);
+		}
+
+    private void InitilizeNamingTabPage()
+    {
+      m_namingTabPage = new TabPage();
+      m_mainTabControl.Controls.Add(m_namingTabPage);
+
+      TableLayoutPanel layout = InitFactory.Layout.Create(1, 2, 5);
+      layout.AutoScroll = true;
+      m_namingTabPage.Controls.Add(layout);
+
+      m_namingNumberSeparator = new LabeledTextEdit(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT, OnOptionChanged);
+      layout.Controls.Add(m_namingNumberSeparator);
+    }
+
+    private void InitilizeAdvancedTabPage()
         {
             m_advancedTabPage = new TabPage();
             m_mainTabControl.Controls.Add(m_advancedTabPage);
@@ -390,13 +372,13 @@ namespace AntiDupl.NET
 
             m_undoQueueSizeLabeledIntegerEdit = new LabeledIntegerEdit(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT, OnOptionChanged);
             m_undoQueueSizeLabeledIntegerEdit.Min = 0;
-            m_undoQueueSizeLabeledIntegerEdit.Default = m_defaultCoreOptions.advancedOptions.undoQueueSize;
+            m_undoQueueSizeLabeledIntegerEdit.Value = m_defaultCoreOptions.advancedOptions.undoQueueSize;
             m_undoQueueSizeLabeledIntegerEdit.Max = 16;
             advancedTableLayoutPanel.Controls.Add(m_undoQueueSizeLabeledIntegerEdit, 0, 7);
 
             m_resultCountMaxLabeledIntegerEdit = new LabeledIntegerEdit(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT, OnOptionChanged);
             m_resultCountMaxLabeledIntegerEdit.Min = 1;
-            m_resultCountMaxLabeledIntegerEdit.Default = m_defaultCoreOptions.advancedOptions.resultCountMax;
+            m_resultCountMaxLabeledIntegerEdit.Value = m_defaultCoreOptions.advancedOptions.resultCountMax;
             advancedTableLayoutPanel.Controls.Add(m_resultCountMaxLabeledIntegerEdit, 0, 8);
 
             m_ignoreFrameWidthLabeledComboBox = new LabeledComboBox(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT, OnOptionChanged);
@@ -554,22 +536,24 @@ namespace AntiDupl.NET
             m_checkOnBlurringCheckBox.Checked = m_newCoreOptions.defectOptions.checkOnBlurring;
             m_blurringThresholdLabeledComboBox.SelectedValue = m_newCoreOptions.defectOptions.blurringThreshold;
 
-            m_bmpCheckBox.Checked = m_newCoreOptions.searchOptions.BMP;
-            m_gifCheckBox.Checked = m_newCoreOptions.searchOptions.GIF;
-            m_jpegCheckBox.Checked = m_newCoreOptions.searchOptions.JPEG;
-            m_pngCheckBox.Checked = m_newCoreOptions.searchOptions.PNG;
-            m_tiffCheckBox.Checked = m_newCoreOptions.searchOptions.TIFF;
-            m_emfCheckBox.Checked = m_newCoreOptions.searchOptions.EMF;
-            m_wmfCheckBox.Checked = m_newCoreOptions.searchOptions.WMF;
-            m_exifCheckBox.Checked = m_newCoreOptions.searchOptions.EXIF;
-            m_iconCheckBox.Checked = m_newCoreOptions.searchOptions.ICON;
-            m_jp2CheckBox.Checked = m_newCoreOptions.searchOptions.JP2;
-            m_psdCheckBox.Checked = m_newCoreOptions.searchOptions.PSD;
-            m_ddsCheckBox.Checked = m_newCoreOptions.searchOptions.DDS;
-            m_tgaCheckBox.Checked = m_newCoreOptions.searchOptions.TGA;
-            m_webpCheckBox.Checked = m_newCoreOptions.searchOptions.WEBP;
+            m_searchTypes["bmp"].Checked = m_newCoreOptions.searchOptions.BMP;
+            m_searchTypes["gif"].Checked = m_newCoreOptions.searchOptions.GIF;
+            m_searchTypes["jpeg"].Checked = m_newCoreOptions.searchOptions.JPEG;
+            m_searchTypes["png"].Checked = m_newCoreOptions.searchOptions.PNG;
+            m_searchTypes["tiff"].Checked = m_newCoreOptions.searchOptions.TIFF;
+            m_searchTypes["emf"].Checked = m_newCoreOptions.searchOptions.EMF;
+            m_searchTypes["wmf"].Checked = m_newCoreOptions.searchOptions.WMF;
+            m_searchTypes["exif"].Checked = m_newCoreOptions.searchOptions.EXIF;
+            m_searchTypes["icon"].Checked = m_newCoreOptions.searchOptions.ICON;
+            m_searchTypes["jp2"].Checked = m_newCoreOptions.searchOptions.JP2;
+            m_searchTypes["psd"].Checked = m_newCoreOptions.searchOptions.PSD;
+            m_searchTypes["dds"].Checked = m_newCoreOptions.searchOptions.DDS;
+            m_searchTypes["tga"].Checked = m_newCoreOptions.searchOptions.TGA;
+            m_searchTypes["webp"].Checked = m_newCoreOptions.searchOptions.WEBP;
             m_searchSystemCheckBox.Checked = m_newCoreOptions.searchOptions.system;
             m_searchHiddenCheckBox.Checked = m_newCoreOptions.searchOptions.hidden;
+
+            m_namingNumberSeparator.Value = m_newCoreOptions.Naming.NumberSeparator;
 
             m_deleteToRecycleBinCheckBox.Checked = m_newCoreOptions.advancedOptions.deleteToRecycleBin;
             m_mistakeDataBaseCheckBox.Checked = m_newCoreOptions.advancedOptions.mistakeDataBase;
@@ -603,26 +587,29 @@ namespace AntiDupl.NET
             m_newCoreOptions.defectOptions.checkOnDefect = m_checkOnDefectCheckBox.Checked;
             m_newCoreOptions.defectOptions.checkOnBlockiness = m_checkOnBlockinessCheckBox.Checked;
             m_newCoreOptions.defectOptions.blockinessThreshold = m_blockinessThresholdLabeledComboBox.SelectedValue;
-			m_newCoreOptions.defectOptions.checkOnBlockinessOnlyNotJpeg = m_checkOnBlockinessOnlyNotJpegCheckBox.Checked;
+			      m_newCoreOptions.defectOptions.checkOnBlockinessOnlyNotJpeg = m_checkOnBlockinessOnlyNotJpegCheckBox.Checked;
             m_newCoreOptions.defectOptions.checkOnBlurring = m_checkOnBlurringCheckBox.Checked;
             m_newCoreOptions.defectOptions.blurringThreshold = m_blurringThresholdLabeledComboBox.SelectedValue;
 
-            m_newCoreOptions.searchOptions.BMP = m_bmpCheckBox.Checked;
-            m_newCoreOptions.searchOptions.GIF = m_gifCheckBox.Checked;
-            m_newCoreOptions.searchOptions.JPEG = m_jpegCheckBox.Checked;
-            m_newCoreOptions.searchOptions.PNG = m_pngCheckBox.Checked;
-            m_newCoreOptions.searchOptions.TIFF = m_tiffCheckBox.Checked;
-            m_newCoreOptions.searchOptions.EMF = m_emfCheckBox.Checked;
-            m_newCoreOptions.searchOptions.WMF = m_wmfCheckBox.Checked;
-            m_newCoreOptions.searchOptions.EXIF = m_exifCheckBox.Checked;
-            m_newCoreOptions.searchOptions.ICON = m_iconCheckBox.Checked;
-            m_newCoreOptions.searchOptions.JP2 = m_jp2CheckBox.Checked;
-            m_newCoreOptions.searchOptions.PSD = m_psdCheckBox.Checked;
-            m_newCoreOptions.searchOptions.DDS = m_ddsCheckBox.Checked;
-            m_newCoreOptions.searchOptions.TGA = m_tgaCheckBox.Checked;
-            m_newCoreOptions.searchOptions.WEBP = m_webpCheckBox.Checked;
+            m_newCoreOptions.searchOptions.BMP = m_searchTypes["bmp"].Checked;
+            m_newCoreOptions.searchOptions.GIF = m_searchTypes["gif"].Checked;
+            m_newCoreOptions.searchOptions.JPEG = m_searchTypes["jpeg"].Checked;
+            m_newCoreOptions.searchOptions.PNG = m_searchTypes["png"].Checked;
+            m_newCoreOptions.searchOptions.TIFF = m_searchTypes["tiff"].Checked;
+            m_newCoreOptions.searchOptions.EMF = m_searchTypes["emf"].Checked;
+            m_newCoreOptions.searchOptions.WMF = m_searchTypes["wmf"].Checked;
+            m_newCoreOptions.searchOptions.EXIF = m_searchTypes["exif"].Checked;
+            m_newCoreOptions.searchOptions.ICON = m_searchTypes["icon"].Checked;
+            m_newCoreOptions.searchOptions.JP2 = m_searchTypes["jp2"].Checked;
+            m_newCoreOptions.searchOptions.PSD = m_searchTypes["psd"].Checked;
+            m_newCoreOptions.searchOptions.DDS = m_searchTypes["dds"].Checked;
+            m_newCoreOptions.searchOptions.TGA = m_searchTypes["tga"].Checked;
+            m_newCoreOptions.searchOptions.WEBP = m_searchTypes["webp"].Checked;
+
             m_newCoreOptions.searchOptions.system = m_searchSystemCheckBox.Checked;
             m_newCoreOptions.searchOptions.hidden = m_searchHiddenCheckBox.Checked;
+
+            m_newCoreOptions.Naming.NumberSeparator = m_namingNumberSeparator.Value;
 
             m_newCoreOptions.advancedOptions.deleteToRecycleBin = m_deleteToRecycleBinCheckBox.Checked;
             m_newCoreOptions.advancedOptions.mistakeDataBase = m_mistakeDataBaseCheckBox.Checked;
@@ -668,22 +655,25 @@ namespace AntiDupl.NET
 
             m_searchTabPage.Text = s.CoreOptionsForm_SearchTabPage_Text;
             m_searchFileTypeGroupBox.Text = s.CoreOptionsForm_SearchFileTypeGroupBox_Text;
-            m_bmpCheckBox.Text = s.CoreOptionsForm_BmpCheckBox_Text;
-            m_gifCheckBox.Text = s.CoreOptionsForm_GifCheckBox_Text;
-            m_jpegCheckBox.Text = s.CoreOptionsForm_JpegCheckBox_Text;
-            m_pngCheckBox.Text = s.CoreOptionsForm_PngCheckBox_Text;
-            m_tiffCheckBox.Text = s.CoreOptionsForm_TiffCheckBox_Text;
-            m_emfCheckBox.Text = s.CoreOptionsForm_EmfCheckBox_Text;
-            m_wmfCheckBox.Text = s.CoreOptionsForm_WmfCheckBox_Text;
-            m_exifCheckBox.Text = s.CoreOptionsForm_ExifCheckBox_Text;
-            m_iconCheckBox.Text = s.CoreOptionsForm_IconCheckBox_Text;
-            m_jp2CheckBox.Text = s.CoreOptionsForm_Jp2CheckBox_Text;
-            m_psdCheckBox.Text = s.CoreOptionsForm_PsdCheckBox_Text;
-            m_ddsCheckBox.Text = s.CoreOptionsForm_DdsCheckBox_Text;
-            m_tgaCheckBox.Text = s.CoreOptionsForm_TgaCheckBox_Text;
-            m_webpCheckBox.Text = s.CoreOptionsForm_WebpCheckBox_Text;
+            m_searchTypes["bmp"].Text = s.CoreOptionsForm_BmpCheckBox_Text;
+            m_searchTypes["gif"].Text = s.CoreOptionsForm_GifCheckBox_Text;
+            m_searchTypes["jpeg"].Text = s.CoreOptionsForm_JpegCheckBox_Text;
+            m_searchTypes["png"].Text = s.CoreOptionsForm_PngCheckBox_Text;
+            m_searchTypes["tiff"].Text = s.CoreOptionsForm_TiffCheckBox_Text;
+            m_searchTypes["emf"].Text = s.CoreOptionsForm_EmfCheckBox_Text;
+            m_searchTypes["wmf"].Text = s.CoreOptionsForm_WmfCheckBox_Text;
+            m_searchTypes["exif"].Text = s.CoreOptionsForm_ExifCheckBox_Text;
+            m_searchTypes["icon"].Text = s.CoreOptionsForm_IconCheckBox_Text;
+            m_searchTypes["jp2"].Text = s.CoreOptionsForm_Jp2CheckBox_Text;
+            m_searchTypes["psd"].Text = s.CoreOptionsForm_PsdCheckBox_Text;
+            m_searchTypes["dds"].Text = s.CoreOptionsForm_DdsCheckBox_Text;
+            m_searchTypes["tga"].Text = s.CoreOptionsForm_TgaCheckBox_Text;
+            m_searchTypes["webp"].Text = s.CoreOptionsForm_WebpCheckBox_Text;
             m_searchSystemCheckBox.Text = s.CoreOptionsForm_SearchSystemCheckBox_Text;
             m_searchHiddenCheckBox.Text = s.CoreOptionsForm_SearchHiddenCheckBox_Text;
+
+            m_namingTabPage.Text = s.Value("options/naming");
+            m_namingNumberSeparator.Text = s.Value("options/naming/number_separator");
 
             m_advancedTabPage.Text = s.CoreOptionsForm_AdvancedTabPage_Text;
             m_deleteToRecycleBinCheckBox.Text = s.CoreOptionsForm_DeleteToRecycleBinCheckBox_Text;

@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace AntiDupl.NET
 {
@@ -295,6 +296,7 @@ namespace AntiDupl.NET
             }
         }
 
+        [XmlType(TypeName = "ColumnOptions")]
         public struct ColumnOptions
         {
             public bool visible;

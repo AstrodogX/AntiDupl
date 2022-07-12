@@ -23,48 +23,67 @@
 */
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Forms;
+using KeyAction = AntiDupl.NET.HotKeyOptions.Action;
 
 namespace AntiDupl.NET
 {
-    public class SelectHotKeysForm : Form
+	public class SelectHotKeysForm : Form
     {
-        private struct HotKeyItem
-        {
-            public PictureBox icon;
-            public Label text;
-            public CheckBox ckeck;
-            public TextBox edit;
-        };
+		private struct HotKeyItem
+		{
+			public PictureBox Icon;
+			public Label Text;
+			public CheckBox Check;
+			public TextBox Edit;
+		};
 
-        private Options m_options;
+		private Options m_options;
         private HotKeyOptions m_newHotKeyOptions;
 
         private Button m_setDefaultButton;
         private Button m_okButton;
         private Button m_cancelButton;
-        private HotKeyItem[] m_hotKeyItems;
+        private Dictionary<KeyAction, HotKeyItem> m_hotKeyItems = new();
         private ToolTip m_toolTip;
 
         private string m_invalidHotKeyToolTipText;
 
-        public SelectHotKeysForm(Options options)
-        {
-            m_options = options;
-            m_newHotKeyOptions = new HotKeyOptions(m_options.hotKeyOptions);
-            InitializeComponents();
-            UpdateStrings();
-            UpdateBottomsEnabling();
-            VerifyValidness();
-            UpdateOptions();
-        }
+		public SelectHotKeysForm(Options options)
+		{
+			m_options = options;
+			m_newHotKeyOptions = new HotKeyOptions(m_options.hotKeyOptions);
+			InitializeComponents();
+			UpdateStrings();
+			UpdateOptions();
+		}
+
+		private static readonly Dictionary<ResultsOptions.ViewMode, Dictionary<KeyAction, string>> Icons = new() {
+      [ResultsOptions.ViewMode.VerticalPairTable] = new() {
+        [KeyAction.CurrentDefectDelete]                = "DeleteDefectVerticalButton",
+        [KeyAction.CurrentDuplPairDeleteFirst]         = "DeleteFirstVerticalButton",
+        [KeyAction.CurrentDuplPairDeleteSecond]        = "DeleteSecondVerticalButton",
+        [KeyAction.CurrentDuplPairDeleteBoth]          = "DeleteBothVerticalButton",
+        [KeyAction.CurrentDuplPairRenameFirstToSecond] = "RenameFirstToSecondVerticalButton",
+        [KeyAction.CurrentDuplPairRenameSecondToFirst] = "RenameSecondToFirstVerticalButton",
+        [KeyAction.CurrentMistake]                     = "MistakeButton"
+			},
+      [ResultsOptions.ViewMode.HorizontalPairTable] = new() {
+        [KeyAction.CurrentDefectDelete]                = "DeleteDefectHorizontalButton",
+        [KeyAction.CurrentDuplPairDeleteFirst]         = "DeleteFirstHorizontalButton",
+        [KeyAction.CurrentDuplPairDeleteSecond]        = "DeleteSecondHorizontalButton",
+        [KeyAction.CurrentDuplPairDeleteBoth]          = "DeleteBothHorizontalButton",
+        [KeyAction.CurrentDuplPairRenameFirstToSecond] = "RenameFirstToSecondHorizontalButton",
+        [KeyAction.CurrentDuplPairRenameSecondToFirst] = "RenameSecondToFirstHorizontalButton",
+        [KeyAction.CurrentMistake]                     = "MistakeButton"
+			}
+    };
 
         private void InitializeComponents()
         {
             ClientSize = new System.Drawing.Size(420, 315);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
+            FormBorderStyle = FormBorderStyle.Sizable;
             StartPosition = FormStartPosition.CenterScreen;
             ShowInTaskbar = false;
             MaximizeBox = false;
@@ -76,99 +95,83 @@ namespace AntiDupl.NET
             m_toolTip.ShowAlways = true;
 
             TableLayoutPanel mainTableLayoutPanel = InitFactory.Layout.Create(1, 2, 5);
-            mainTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 80F));
-            mainTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            mainTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             Controls.Add(mainTableLayoutPanel);
 
-            TableLayoutPanel hotKeysTableLayoutPanel = InitFactory.Layout.Create(4, m_newHotKeyOptions.keys.Length, 5);
-            hotKeysTableLayoutPanel.CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset;
-            hotKeysTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 8F));
-            hotKeysTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 66F));
-            hotKeysTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 6F));
-            hotKeysTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+            KeyAction[] actions = HotKeyOptions.AvailableActions();
+            int count = actions.Length;
+
+            TableLayoutPanel hotKeysTableLayoutPanel = InitFactory.Layout.Create(4, count, 5);
+            //hotKeysTableLayoutPanel.CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset;                       
+            hotKeysTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20));
+            hotKeysTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+            hotKeysTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20)); 
+            hotKeysTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            hotKeysTableLayoutPanel.AutoScroll = true;
+
             mainTableLayoutPanel.Controls.Add(hotKeysTableLayoutPanel, 0, 0);
-            
-            m_hotKeyItems = new HotKeyItem[m_newHotKeyOptions.keys.Length];
-            for(int i = 0; i < m_hotKeyItems.Length; i++)
-            {
-                HotKeyItem item = new HotKeyItem();
-                item.icon = new PictureBox();
-                item.icon.Location = new System.Drawing.Point(0, 0);
-                item.icon.Size = new System.Drawing.Size(20, 20);
-                item.icon.SizeMode = PictureBoxSizeMode.Zoom;
-                hotKeysTableLayoutPanel.Controls.Add(item.icon, 0, i);
 
-                item.text = new Label();
-                item.text.Location = new System.Drawing.Point(0, 0);
-                item.text.Dock = DockStyle.Fill;
-                item.text.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-                hotKeysTableLayoutPanel.Controls.Add(item.text, 1, i);
-                
-                item.ckeck = new CheckBox();
-                item.ckeck.Location = new System.Drawing.Point(0, 0);
-                item.ckeck.Size = new System.Drawing.Size(20, 20);
-                item.ckeck.Dock = DockStyle.Fill;
-                item.ckeck.Tag = i;
-                item.ckeck.Click += new EventHandler(OnCheckBoxClick);
-                hotKeysTableLayoutPanel.Controls.Add(item.ckeck, 2, i);
+            for (int i = 0; i < count; ++i) {
+              KeyAction action = actions[i];
 
-                item.edit = new TextBox();
-                item.edit.Location = new System.Drawing.Point(0, 0);
-                item.edit.Dock = DockStyle.Fill;
-                item.edit.ReadOnly = true;
-                item.edit.Multiline = false;
-                item.edit.KeyDown += new KeyEventHandler(OnTextBoxKeyDown);
-                item.edit.Tag = i;
-                hotKeysTableLayoutPanel.Controls.Add(item.edit, 3, i);
+                HotKeyItem item = new();
+
+                item.Check = new CheckBox();
+                item.Check.Location = new System.Drawing.Point(0, 0);
+                item.Check.Size = new System.Drawing.Size(20, 20);
+                item.Check.Tag = action;
+                item.Check.Click += new EventHandler(OnCheckBoxClick);
+                hotKeysTableLayoutPanel.Controls.Add(item.Check, 0, i);
+
+                item.Edit = new TextBox();
+                item.Edit.Location = new System.Drawing.Point(0, 0);
+                item.Edit.ReadOnly = true;
+                item.Edit.Multiline = false;
+                item.Edit.KeyDown += new KeyEventHandler(OnTextBoxKeyDown);
+                item.Edit.Tag = action;
+                hotKeysTableLayoutPanel.Controls.Add(item.Edit, 1, i);
                 
-                m_hotKeyItems[i] = item;
+                item.Icon = new PictureBox();
+                item.Icon.Location = new System.Drawing.Point(0, 0);
+                item.Icon.Size = new System.Drawing.Size(20, 20);
+                item.Icon.SizeMode = PictureBoxSizeMode.Zoom;
+
+                item.Icon.Image = Resources.Images.Get(Icons.GetValueOrDefault(m_options.resultsOptions.viewMode).GetValueOrDefault(action));
+
+                hotKeysTableLayoutPanel.Controls.Add(item.Icon, 2, i);    
+
+                item.Text = new Label();
+                item.Text.Location = new System.Drawing.Point(0, 0);
+                item.Text.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+                item.Text.Dock = DockStyle.Fill;
+                item.Text.MinimumSize = new(20, 20);
+                item.Text.MaximumSize = new(100000, 20);
+                hotKeysTableLayoutPanel.Controls.Add(item.Text, 3, i);
+                
+                m_hotKeyItems[action] = item;
             }
 
-            InitializeIcons();
-
-            TableLayoutPanel buttonsTableLayoutPanel = InitFactory.Layout.Create(4, 1);
-            buttonsTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
-            buttonsTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
-            buttonsTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
-            buttonsTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
-            mainTableLayoutPanel.Controls.Add(buttonsTableLayoutPanel, 0, 1);
+            FlowLayoutPanel buttons = new();
+            buttons.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+            buttons.AutoSize = true;
+            mainTableLayoutPanel.Controls.Add(buttons, 0, 1);
 
             m_okButton = new Button();
+            m_okButton.Anchor = AnchorStyles.Right;
             m_okButton.Click += new System.EventHandler(OnButtonClick);
-            buttonsTableLayoutPanel.Controls.Add(m_okButton, 1, 0);
+            buttons.Controls.Add(m_okButton);
 
             m_cancelButton = new Button();
+            m_cancelButton.Anchor = AnchorStyles.Right;
             m_cancelButton.Click += new System.EventHandler(OnButtonClick);
-            buttonsTableLayoutPanel.Controls.Add(m_cancelButton, 2, 0);
+            buttons.Controls.Add(m_cancelButton);
             
             m_setDefaultButton = new Button();
             m_setDefaultButton.AutoSize = true;
             m_setDefaultButton.Click += new System.EventHandler(OnButtonClick);
-            buttonsTableLayoutPanel.Controls.Add(m_setDefaultButton, 3, 0);
+            buttons.Controls.Add(m_setDefaultButton);
         }
         
-        private void InitializeIcons()
-        {
-            if (m_options.resultsOptions.viewMode == ResultsOptions.ViewMode.VerticalPairTable)
-            {
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDefectDelete].icon.Image = Resources.Images.Get("DeleteDefectVerticalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteFirst].icon.Image = Resources.Images.Get("DeleteFirstVerticalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteSecond].icon.Image = Resources.Images.Get("DeleteSecondVerticalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteBoth].icon.Image = Resources.Images.Get("DeleteBothVerticalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairRenameFirstToSecond].icon.Image = Resources.Images.Get("RenameFirstToSecondVerticalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairRenameSecondToFirst].icon.Image = Resources.Images.Get("RenameSecondToFirstVerticalButton");
-            }
-            else if (m_options.resultsOptions.viewMode == ResultsOptions.ViewMode.HorizontalPairTable)
-            {
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDefectDelete].icon.Image = Resources.Images.Get("DeleteDefectHorizontalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteFirst].icon.Image = Resources.Images.Get("DeleteFirstHorizontalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteSecond].icon.Image = Resources.Images.Get("DeleteSecondHorizontalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteBoth].icon.Image = Resources.Images.Get("DeleteBothHorizontalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairRenameFirstToSecond].icon.Image = Resources.Images.Get("RenameFirstToSecondHorizontalButton");
-                m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairRenameSecondToFirst].icon.Image = Resources.Images.Get("RenameSecondToFirstHorizontalButton");
-            }
-            m_hotKeyItems[(int)HotKeyOptions.Action.CurrentMistake].icon.Image = Resources.Images.Get("MistakeButton");
-        }
 
         private void UpdateStrings()
         {
@@ -182,99 +185,86 @@ namespace AntiDupl.NET
 
             m_invalidHotKeyToolTipText = s.SelectHotKeysForm_InvalidHotKeyToolTipText;
 
-            m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDefectDelete].text.Text = s.ResultsPreviewDefect_DeleteButton_ToolTip_Text;
-            m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteFirst].text.Text = s.ResultsPreviewDuplPair_DeleteFirstButton_ToolTip_Text;
-            m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteSecond].text.Text = s.ResultsPreviewDuplPair_DeleteSecondButton_ToolTip_Text;
-            m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairDeleteBoth].text.Text = s.ResultsPreviewDuplPair_DeleteBothButton_ToolTip_Text;
-            m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairRenameFirstToSecond].text.Text = s.ResultsPreviewDuplPair_RenameFirstToSecondButton_ToolTip_Text;
-            m_hotKeyItems[(int)HotKeyOptions.Action.CurrentDuplPairRenameSecondToFirst].text.Text = s.ResultsPreviewDuplPair_RenameSecondToFirstButton_ToolTip_Text;
-            m_hotKeyItems[(int)HotKeyOptions.Action.CurrentMistake].text.Text = s.ResultsPreviewDuplPair_MistakeButton_ToolTip_Text;
-            m_hotKeyItems[(int)HotKeyOptions.Action.ShowNeighbours].text.Text = s.MainMenu_View_ShowNeighbourImageMenuItem_Text;
+            m_hotKeyItems[KeyAction.CurrentDefectDelete].Text.Text = s.ResultsPreviewDefect_DeleteButton_ToolTip_Text;
+            m_hotKeyItems[KeyAction.CurrentDuplPairDeleteFirst].Text.Text = s.ResultsPreviewDuplPair_DeleteFirstButton_ToolTip_Text;
+            m_hotKeyItems[KeyAction.CurrentDuplPairDeleteSecond].Text.Text = s.ResultsPreviewDuplPair_DeleteSecondButton_ToolTip_Text;
+            m_hotKeyItems[KeyAction.CurrentDuplPairDeleteBoth].Text.Text = s.ResultsPreviewDuplPair_DeleteBothButton_ToolTip_Text;
+            m_hotKeyItems[KeyAction.CurrentDuplPairRenameFirstToSecond].Text.Text = s.ResultsPreviewDuplPair_RenameFirstToSecondButton_ToolTip_Text;
+            m_hotKeyItems[KeyAction.CurrentDuplPairRenameSecondToFirst].Text.Text = s.ResultsPreviewDuplPair_RenameSecondToFirstButton_ToolTip_Text;
+            m_hotKeyItems[KeyAction.CurrentMistake].Text.Text = s.ResultsPreviewDuplPair_MistakeButton_ToolTip_Text;
+            m_hotKeyItems[KeyAction.ShowNeighbours].Text.Text = s.MainMenu_View_ShowNeighbourImageMenuItem_Text;
+
+      m_hotKeyItems[KeyAction.QuickRename].Text.Text = s.Value("menu/edit/quick_rename");
         }
 
-        private void OnButtonClick(object sender, EventArgs e)
-        {
-            Button button = (Button)sender;
-            
-            if(button == m_setDefaultButton)
-            {
-                m_newHotKeyOptions = new HotKeyOptions();
-                UpdateOptions();
-                UpdateBottomsEnabling();
-                VerifyValidness();
-                return;
-            }
-            
-            if (button == m_okButton)
-            {
-                m_newHotKeyOptions.CopyTo(ref m_options.hotKeyOptions);
-                // для обновления подсказки в меню
-                Resources.Strings.Update();
-            }
-            Close();
-        }
+		private void OnButtonClick(object sender, EventArgs e)
+		{
+			Button button = (Button) sender;
 
-        private void OnCheckBoxClick(object sender, EventArgs e)
-        {
-            CheckBox checkBox = (CheckBox)sender;
-            int i = (int)checkBox.Tag;
-            HotKeyItem item = m_hotKeyItems[i];
-            if(!item.ckeck.Checked)
-            {
-                m_newHotKeyOptions.keys[i] = Keys.None;
-            }
-            else
-            {
-                m_newHotKeyOptions.SetDefault((HotKeyOptions.Action)i);
-            }
-            UpdateOptions();
-            UpdateBottomsEnabling();
-            VerifyValidness();
-        }
+			if (button == m_setDefaultButton) {
+				m_newHotKeyOptions.Reset();
+				UpdateOptions();
+				return;
+			}
 
-        private void UpdateOptions()
-        {
-            for(int i = 0; i < m_hotKeyItems.Length; i++)
-            {
-                m_hotKeyItems[i].ckeck.Checked = m_newHotKeyOptions.keys[i] != Keys.None;
-                m_hotKeyItems[i].edit.Text = m_newHotKeyOptions.keys[i].ToString().Replace(',', '+');
-            }
-        }
+			if (button == m_okButton) {
+        m_options.hotKeyOptions = new(m_newHotKeyOptions);
+				// для обновления подсказки в меню
+				Resources.Strings.Update();
+			}
 
-        private void UpdateBottomsEnabling()
-        {
-            m_okButton.Enabled = !m_newHotKeyOptions.Equals(m_options.hotKeyOptions) && m_newHotKeyOptions.Valid();
-            m_setDefaultButton.Enabled = !m_newHotKeyOptions.Equals(new HotKeyOptions());
-        }
-        
-        private void OnTextBoxKeyDown(object sender, KeyEventArgs e)
-        {
-            TextBox textBox = (TextBox)sender;
-            int i = (int)textBox.Tag;
-            HotKeyItem item = m_hotKeyItems[i];
-            m_newHotKeyOptions.keys[i] = e.KeyData;
-            UpdateOptions();
-            UpdateBottomsEnabling();
-            VerifyValidness();
-        }
+			Close();
+		}
 
-        private void VerifyValidness()
-        {
-            for (int i = 0; i < m_hotKeyItems.Length; i++)
-            {
-                if (m_newHotKeyOptions.Valid((HotKeyOptions.Action)i))
-                {
-                    m_toolTip.SetToolTip(m_hotKeyItems[i].edit, "");
-                    m_hotKeyItems[i].edit.ForeColor = TextBox.DefaultForeColor;
-                    m_hotKeyItems[i].edit.BackColor = TextBox.DefaultBackColor;
-                }
-                else
-                {
-                    m_toolTip.SetToolTip(m_hotKeyItems[i].edit, m_invalidHotKeyToolTipText);
-                    m_hotKeyItems[i].edit.ForeColor = Color.Red;
-                    m_hotKeyItems[i].edit.BackColor = TextBox.DefaultBackColor;
-                }
-            }
-        }
-    }
+		private void OnCheckBoxClick(object sender, EventArgs e)
+		{
+			CheckBox box = (CheckBox) sender;
+      KeyAction action = (KeyAction) box.Tag;
+			
+			if (box.Checked) {
+        m_newHotKeyOptions.Reset(action);				
+			} else {
+        m_newHotKeyOptions.Clear(action);
+			}
+
+			UpdateOptions();
+		}
+
+		private void OnTextBoxKeyDown(object sender, KeyEventArgs e)
+		{
+			TextBox box = (TextBox) sender;
+      KeyAction action = (KeyAction) box.Tag;
+
+      m_newHotKeyOptions.Bind(action, e.KeyData);
+
+			UpdateOptions();
+		}
+
+		private void UpdateOptions()
+		{
+      bool optionsValid = true;
+      foreach (var pair in m_hotKeyItems) {
+        KeyAction action = pair.Key;
+        HotKeyItem item = pair.Value;
+
+        bool valid = m_newHotKeyOptions.IsValid(action);
+        if (optionsValid && valid == false) {
+          optionsValid = valid;
+				}
+
+        TextBox edit = item.Edit;
+        m_toolTip.SetToolTip(edit, valid ? "" : m_invalidHotKeyToolTipText);
+				edit.ForeColor = valid ? TextBox.DefaultForeColor : Color.Red;
+        edit.BackColor = valid ? TextBox.DefaultBackColor : TextBox.DefaultBackColor;
+
+        CheckBox check = item.Check;
+        Keys keys = m_newHotKeyOptions.Binding(action);
+        check.Checked = keys != Keys.None;
+        edit.Text = keys.ToString().Replace(',', '+');
+			}
+
+      m_okButton.Enabled = optionsValid && m_newHotKeyOptions.IsEqualsTo(m_options.hotKeyOptions) == false;
+			m_setDefaultButton.Enabled = m_newHotKeyOptions.IsEqualsTo(new HotKeyOptions()) == false;
+		}
+	}
 }

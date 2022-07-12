@@ -1,206 +1,175 @@
-/*
-* AntiDupl.NET Program (http://ermig1979.github.io/AntiDupl).
-*
-* Copyright (c) 2002-2018 Yermalayeu Ihar.
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy 
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-* copies of the Software, and to permit persons to whom the Software is 
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in 
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace AntiDupl.NET
 {
-    public class HotKeyOptions
-    {
-        public enum Action
-        {
-            CurrentDefectDelete,
-            CurrentDuplPairDeleteFirst,
-            CurrentDuplPairDeleteSecond,
-            CurrentDuplPairDeleteBoth,
-            CurrentDuplPairRenameFirstToSecond,
-            CurrentDuplPairRenameSecondToFirst,
-            CurrentMistake,
-            ShowNeighbours,
-            Size
-        }
-        
-        public Keys[] keys;
-        
-        public HotKeyOptions()
-        {
-            keys = new Keys[(int)Action.Size];
-            SetDefault();
-        }
-    
-        public HotKeyOptions(HotKeyOptions options)
-        {
-            keys = new Keys[(int)Action.Size];
-            if (options.keys.Length == (int)Action.Size)
-            {
-                for (int i = 0; i < keys.Length; ++i)
-                    keys[i] = options.keys[i];
-            }
-            else
-                SetDefault();
-        }
-        
-        public void SetDefault()
-        {
-            keys[(int)Action.CurrentDefectDelete] = Keys.NumPad1;
-            keys[(int)Action.CurrentDuplPairDeleteFirst] = Keys.NumPad1;
-            keys[(int)Action.CurrentDuplPairDeleteSecond] = Keys.NumPad2;
-            keys[(int)Action.CurrentDuplPairDeleteBoth] = Keys.NumPad3;
-            keys[(int)Action.CurrentDuplPairRenameFirstToSecond] = Keys.NumPad4;
-            keys[(int)Action.CurrentDuplPairRenameSecondToFirst] = Keys.NumPad6;
-            keys[(int)Action.CurrentMistake] = Keys.NumPad5;
-            keys[(int)Action.ShowNeighbours] = Keys.Control | Keys.Q;
-        }
+	public class HotKeyOptions
+	{
+		public enum Action
+		{
+			CurrentDefectDelete,
+			CurrentDuplPairDeleteFirst,
+			CurrentDuplPairDeleteSecond,
+			CurrentDuplPairDeleteBoth,
+			CurrentDuplPairRenameFirstToSecond,
+			CurrentDuplPairRenameSecondToFirst,
+			CurrentMistake,
+			ShowNeighbours,
+			QuickRename
+		}
 
-        public void SetDefault(Action action)
-        {
-            int i = 1;
-            for (Keys key = Keys.NumPad1; key < Keys.NumPad5; key++, i++)
-            {
-                if ((int)action == i)
-                {
-                    keys[(int)action] = key;
-                    break;
-                }
-            }
-            if (action == Action.CurrentDefectDelete)
-                keys[(int)Action.CurrentDefectDelete] = Keys.NumPad1;
-            if (action == Action.CurrentMistake)
-                keys[(int)Action.CurrentMistake] = Keys.NumPad5;
-            if (action == Action.CurrentDuplPairRenameSecondToFirst)
-                keys[(int)Action.CurrentDuplPairRenameSecondToFirst] = Keys.NumPad6;
-            if (action == Action.ShowNeighbours)
-                keys[(int)Action.ShowNeighbours] = Keys.Control | Keys.Q;
-            /*for(Keys key = Keys.NumPad1; key < Keys.NumPad7; key++)
-            {
-                keys[(int)action] = key;
-                if(Valid(action)) 
-                    break;
-            }*/
-        }
-        
-        public void CopyTo(ref HotKeyOptions options)
-        {
-            if (keys.Length != options.keys.Length)
-                options.keys = new Keys[(int)Action.Size];
-            for (int i = 0; i < keys.Length; ++i)
-                options.keys[i] = keys[i];
-        }
+		public Dictionary<Action, Keys> Bindings { get; private set; } = new();
 
-        public bool Equals(HotKeyOptions options)
-        {
-            if (keys.Length != options.keys.Length)
-                return false;
-            for (int i = 0; i < keys.Length; ++i)
-                if(options.keys[i] != keys[i])
-                    return false;
-            return true;
-        }
+		private static readonly Dictionary<Action, Keys> Defaults = new() {
+			[Action.CurrentDefectDelete] = Keys.NumPad1,
+			[Action.CurrentDuplPairDeleteFirst] = Keys.NumPad1,
+			[Action.CurrentDuplPairDeleteSecond] = Keys.NumPad2,
+			[Action.CurrentDuplPairDeleteBoth] = Keys.NumPad3,
+			[Action.CurrentDuplPairRenameFirstToSecond] = Keys.NumPad4,
+			[Action.CurrentDuplPairRenameSecondToFirst] = Keys.NumPad6,
+			[Action.CurrentMistake] = Keys.NumPad5,
+			[Action.ShowNeighbours] = Keys.Control | Keys.Q,
+			[Action.QuickRename] = Keys.F2,
+		};
 
-        public bool Valid(Action action)
-        {
-            KeyEventArgs key = new KeyEventArgs(keys[(int)action]);
-            if(key.KeyData == Keys.None)
-            {
-                return true;
-            }
-            for(int i = 0; i < m_reservedKeys.Length; i++)
-            {
-                if(key.KeyCode == m_reservedKeys[i])
-                {
-                    return false;
-                }
-            }
-            for (int i = 0; i < m_reservedKeyCombinations.Length; i++)
-            {
-                if (key.KeyData == m_reservedKeyCombinations[i])
-                {
-                    return false;
-                }
-            }
-            
-            if(action == Action.CurrentDefectDelete)
-            {
-                if(key.KeyData == keys[(int)Action.CurrentMistake])
-                {
-                    return false;
-                }
-            }
-            else if (action == Action.CurrentMistake)
-            {
-                for (Action a = Action.CurrentDefectDelete; a < Action.CurrentMistake; a++)
-                {
-                    if (key.KeyData == keys[(int)a])
-                    {
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                for (Action a = Action.CurrentDuplPairDeleteFirst; a < Action.Size; a++)
-                {
-                    if (a != action && key.KeyData == keys[(int)a])
-                    {
-                        return false;
-                    }
-                }
-            }
+		private static readonly Keys[] ReservedKeyCombinations = {
+			Keys.A | Keys.Control,
+			Keys.C | Keys.Control,
+			Keys.Z | Keys.Control,
+			Keys.Y | Keys.Control
+		};
 
-            return true;
-        }
+		private static readonly Keys[] ReservedKeys = {
+			Keys.Up,
+			Keys.Down,
+			Keys.PageUp,
+			Keys.PageDown,
+			Keys.Home,
+			Keys.End
+		};
 
-        public bool Valid()
-        {
-            for (Action action = Action.CurrentDefectDelete; action < Action.Size; action++)
-            {
-                if(!Valid(action))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        
-        private static Keys[] m_reservedKeyCombinations =
-        {
-            Keys.A | Keys.Control,
-            Keys.C | Keys.Control,
-            Keys.Z | Keys.Control,
-            Keys.Y | Keys.Control
-        };
+		public int Count { get => Bindings.Count; }
 
-        private static Keys[] m_reservedKeys =
-        {
-            Keys.Up, 
-            Keys.Down,
-            Keys.PageUp,
-            Keys.PageDown,
-            Keys.Home,
-            Keys.End             
-        };
-    }
+		public static int TotalCount { get => Defaults.Count; }
+
+		public static Action[] AvailableActions()
+		{
+			return Defaults.Keys.ToArray();
+		}
+
+		public HotKeyOptions()
+		{
+			Reset();
+		}
+
+		public HotKeyOptions(HotKeyOptions other)
+		{
+			if (other != null) {
+				Bindings = new(other.Bindings);
+			} else {
+				Reset();
+			}
+		}
+
+		public Keys Binding(Action action)
+		{
+			return Bindings.GetValueOrDefault(action, Keys.None);
+		}
+
+		public void Bind(Action action, Keys keys)
+		{
+			Bindings[action] = keys;
+		}
+
+		public void Clear(Action action)
+		{
+			Bindings[action] = Keys.None;
+		}
+
+		public Action[] Actions(Keys keys)
+		{
+			List<Action> result = new();
+
+			foreach (var item in Bindings) {
+				if (item.Value == keys) {
+					result.Add(item.Key);
+				}
+			}
+
+			return result.ToArray();
+		}
+
+		public void Reset()
+		{
+			foreach (var item in Defaults) {
+				Bindings[item.Key] = item.Value;
+			}
+		}
+
+		public void Reset(Action action)
+		{
+			Bindings[action] = Defaults.GetValueOrDefault(action, Keys.None);
+		}
+
+		public bool IsEqualsTo(HotKeyOptions other)
+		{
+			return other != null && Bindings.Count == other.Bindings.Count && Bindings.Except(other.Bindings).Any() == false;
+		}
+
+		public static bool IsKeysAllowed(Keys keys)
+		{
+			if (keys == Keys.None) {
+				return true;
+			}
+
+			if (ReservedKeyCombinations.Contains(keys)) {
+				return false;
+			}
+
+			return ReservedKeys.Contains((new KeyEventArgs(keys)).KeyCode) == false;
+		}
+
+		public bool IsValid(Action action)
+		{
+			Keys keys = Binding(action);
+
+			if (keys == Keys.None) {
+				return true;
+			}
+
+			if (IsKeysAllowed(keys) == false) {
+				return false;
+			}
+
+			Action[] actions = Actions(keys);
+
+			// no other action is bound to this key
+			if (actions.Length <= 1) {
+				return true;
+			}
+
+			// can share any keys except CurrentMistake keys
+			if (action == Action.CurrentDefectDelete) {
+				return actions.Contains(Action.CurrentMistake) == false;
+			}
+			if (action != Action.CurrentMistake && actions.Length == 2 && actions.Contains(Action.CurrentDefectDelete)) {
+				return true;
+			}
+
+			return false;
+		}
+
+		public bool IsValid()
+		{
+			foreach (var item in Bindings) {
+				if (IsValid(item.Key) == false) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+	}
 }

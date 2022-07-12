@@ -37,6 +37,7 @@ namespace AntiDupl.NET
         public enum Type
         {
             ApplyAction,
+            ApplyActionCurrent,
             RenameCurrent,
             MoveCurrentGroup,
             RenameCurrentGroupAs,
@@ -100,6 +101,14 @@ namespace AntiDupl.NET
             m_type = Type.ApplyAction;
             m_action = action;
             m_target = target;
+            Initialize(core, options, coreOptions, mainSplitContainer);
+        }
+
+        public ProgressForm(CoreDll.LocalActionType action, CoreDll.RenameCurrentType renameCurrentType, CoreLib core, Options options, CoreOptions coreOptions, MainSplitContainer mainSplitContainer)
+        {
+            m_type = Type.ApplyActionCurrent;
+            m_action = action;
+            m_renameCurrentType = renameCurrentType;
             Initialize(core, options, coreOptions, mainSplitContainer);
         }
 
@@ -230,6 +239,15 @@ namespace AntiDupl.NET
                         m_core.Clear(CoreDll.FileType.Temporary);
                         break;
                     }
+
+                case Type.ApplyActionCurrent:
+                {
+                    m_updateResults = m_core.ApplyToCurrent(m_action, m_renameCurrentType);
+                    m_type = Type.ClearTemporary;
+                    m_core.Clear(CoreDll.FileType.Temporary);
+                    break;
+                }
+
                 case Type.RenameCurrent:
                     {
                         m_updateResults = m_core.RenameCurrent(m_renameCurrentType, m_newFileName);

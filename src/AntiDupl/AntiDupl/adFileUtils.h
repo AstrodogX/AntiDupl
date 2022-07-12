@@ -72,6 +72,18 @@ namespace ad
 	size_t LengthOfLong(const __int64 digit);
 	TString GetSimilarPath(const TPath &path);
 	TString GetSimilarPath(const TPath &path, const TPath &pathForRename);
+
+	size_t calculateIntegerLength(__int64 value);
+	size_t calculateIntegerLength(unsigned __int64 value);
+
+  TString removeNumberSuffix(const TString &name);
+  TString removeNumberSuffix(const TPath &path);
+
+  TString changeNumberSuffix(const TString &name, int delta = 1, bool force = false, bool *changed = nullptr);
+  TString changeNumberSuffix(const TPath &path, int delta = 1, bool force = false, bool *changed = nullptr);
+
+	TString extractPatternGroup(const TString &text, int index = 1);
+	TString replacePatternGroup(const TString &text, const TString &replace, int index = 1);
 }
 
 #endif//__adFileUtils_h__

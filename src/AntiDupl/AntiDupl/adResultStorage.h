@@ -72,6 +72,8 @@ namespace ad
 		adError MoveCurrentGroup(const TString& directory);
 		adError RenameCurrentGroupAs(const TString& fileName);
 
+    adError applyToCurrent(adLocalActionType localActionType, adRenameCurrentType renameCurrentType);
+
         bool CanApply(adActionEnableType actionEnableType) const;
 
         adError SetCurrent(adSize currentIndex);

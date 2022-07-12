@@ -223,6 +223,28 @@ namespace ad
         return m_pUndoRedoEngine->RenameCurrentGroupAs(fileName) ? AD_OK : AD_ERROR_UNKNOWN;
     }
 
+  adError TResultStorage::applyToCurrent(adLocalActionType localActionType, adRenameCurrentType renameCurrentType)
+  {
+    if (localActionType < 0 && localActionType >= AD_LOCAL_ACTION_SIZE) {
+      return AD_ERROR_INVALID_LOCAL_ACTION_TYPE;
+    }
+
+    if (renameCurrentType < 0 && renameCurrentType >= AD_RENAME_CURRENT_SIZE) {
+      return AD_ERROR_INVALID_RENAME_CURRENT_TYPE;
+    }
+
+    TUndoRedoStage *pCurrent = m_pUndoRedoEngine->Current();
+    if (pCurrent->currentIndex >= pCurrent->results.size()) {
+      return AD_ERROR_ZERO_TARGET;
+    }      
+
+    TResult *pResult = pCurrent->results[pCurrent->currentIndex];
+    if (pResult->type == AD_RESULT_DEFECT_IMAGE && renameCurrentType == AD_RENAME_CURRENT_SECOND) {
+      return AD_ERROR_ZERO_TARGET;
+    }
+
+    return m_pUndoRedoEngine->applyToCurrent(localActionType, renameCurrentType) ? AD_OK : AD_ERROR_ZERO_TARGET;
+  }
 
     void TResultStorage::Refresh()
     {

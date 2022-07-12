@@ -32,6 +32,14 @@ namespace AntiDupl.NET
         public Strings()
         {
             StringsDefaultEnglish.CopyTo(this);
+          Table = StringsDefaultEnglish.Table;
+        }
+                
+        public Dictionary<string, string> Table = new Dictionary<string, string>();
+
+        public string Value(string key)
+        {
+          return Table.GetValueOrDefault(key, key);
         }
 
         public string Name;

@@ -41,14 +41,7 @@ namespace AntiDupl.NET
 
         public CoreLib(string userPath)
         {
-            try
-            {
-                m_dll = new CoreDll();
-            }
-            catch
-            {
-                throw new Exception("Can't load core library!");
-            }
+            m_dll = new CoreDll();            
             if (Version.Compatible(GetVersion(CoreDll.VersionType.AntiDupl)))
             {
                 m_handle = m_dll.adCreateW(userPath);
@@ -227,6 +220,11 @@ namespace AntiDupl.NET
         public bool ApplyToResult(CoreDll.LocalActionType localActionType, CoreDll.TargetType targetType)
         {
             return m_dll.adResultApplyTo(m_handle, localActionType, targetType) == CoreDll.Error.Ok;
+        }
+
+        public bool ApplyToCurrent(CoreDll.LocalActionType localActionType, CoreDll.RenameCurrentType renameCurrentType)
+        {
+            return m_dll.adResultApplyToCurrent(m_handle, localActionType, renameCurrentType) == CoreDll.Error.Ok;
         }
 
         public bool CanApply(CoreDll.ActionEnableType actionEnableType)

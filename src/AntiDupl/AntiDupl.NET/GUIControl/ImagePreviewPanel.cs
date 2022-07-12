@@ -30,6 +30,8 @@ using System.Drawing;
 using System.ComponentModel;
 using System.IO;
 
+using AntiDupl.NET.Controls;
+
 namespace AntiDupl.NET
 {
     public class ImagePreviewPanel : TableLayoutPanel
@@ -70,13 +72,13 @@ namespace AntiDupl.NET
         public CoreImageInfo NeighbourImageInfo { get { return m_neighbourImageInfo; } }
         
         private PictureBoxPanel m_pictureBoxPanel;
-        private Label m_fileSizeLabel;
-        private Label m_imageSizeLabel;
-        private Label m_imageTypeLabel;
-        private Label m_imageBlocknessLabel;
-        private Label m_imageBlurringLabel;
-        private Label m_imageExifLabel;
-        private Label m_pathLabel;
+        private SilentLabel m_fileSizeLabel;
+        private SilentLabel m_imageSizeLabel;
+        private SilentLabel m_imageTypeLabel;
+        private SilentLabel m_imageBlocknessLabel;
+        private SilentLabel m_imageBlurringLabel;
+        private SilentLabel m_imageExifLabel;
+        private SilentLabel m_pathLabel;
         private ToolTip m_toolTip;
 
         public ImagePreviewPanel(CoreLib core, Options options, ResultsListView resultsListView, Position position)
@@ -104,14 +106,14 @@ namespace AntiDupl.NET
             m_pictureBoxPanel = new PictureBoxPanel(m_core, m_options);
             m_pictureBoxPanel.ContextMenuStrip = new ImagePreviewContextMenu(m_core, m_options, m_resultsListView.CoreOptions, this, m_resultsListView);
             
-            m_fileSizeLabel = new Label();
+            m_fileSizeLabel = new();
             m_fileSizeLabel.Dock = DockStyle.Fill;
             m_fileSizeLabel.BorderStyle = BorderStyle.Fixed3D;
             m_fileSizeLabel.Padding = new Padding(1, 3, 1, 0);
             m_fileSizeLabel.TextAlign = ContentAlignment.TopCenter;
             m_fileSizeLabel.AutoSize = true;
             
-            m_imageSizeLabel = new Label();
+            m_imageSizeLabel = new();
             m_imageSizeLabel.Dock = DockStyle.Fill;
             m_imageSizeLabel.BorderStyle = BorderStyle.Fixed3D;
             m_imageSizeLabel.Padding = new Padding(1, 3, 1, 0);
@@ -119,7 +121,7 @@ namespace AntiDupl.NET
             m_imageSizeLabel.TextAlign = ContentAlignment.TopCenter;
             m_imageSizeLabel.AutoSize = true;
 
-            m_imageBlocknessLabel = new Label();
+            m_imageBlocknessLabel = new();
             m_imageBlocknessLabel.Dock = DockStyle.Fill;
             m_imageBlocknessLabel.BorderStyle = BorderStyle.Fixed3D;
             m_imageBlocknessLabel.Padding = new Padding(1, 3, 1, 0);
@@ -127,7 +129,7 @@ namespace AntiDupl.NET
             m_imageBlocknessLabel.TextAlign = ContentAlignment.TopCenter;
             m_imageBlocknessLabel.AutoSize = true;
 
-            m_imageBlurringLabel = new Label();
+            m_imageBlurringLabel = new();
             m_imageBlurringLabel.Dock = DockStyle.Fill;
             m_imageBlurringLabel.BorderStyle = BorderStyle.Fixed3D;
             m_imageBlurringLabel.Padding = new Padding(1, 3, 1, 0);
@@ -135,7 +137,7 @@ namespace AntiDupl.NET
             m_imageBlurringLabel.TextAlign = ContentAlignment.TopCenter;
             m_imageBlurringLabel.AutoSize = true;
 
-            m_imageTypeLabel = new Label();
+            m_imageTypeLabel = new();
             m_imageTypeLabel.Dock = DockStyle.Fill;
             m_imageTypeLabel.BorderStyle = BorderStyle.Fixed3D;
             m_imageTypeLabel.Padding = new Padding(1, 3, 1, 0);
@@ -143,7 +145,7 @@ namespace AntiDupl.NET
             m_imageTypeLabel.TextAlign = ContentAlignment.TopCenter;
             m_imageTypeLabel.AutoSize = true;
 
-            m_imageExifLabel = new Label();
+            m_imageExifLabel = new();
             m_imageExifLabel.Dock = DockStyle.Fill;
             m_imageExifLabel.BorderStyle = BorderStyle.Fixed3D;
             m_imageExifLabel.Padding = new Padding(1, 3, 1, 0);
@@ -153,12 +155,12 @@ namespace AntiDupl.NET
             m_imageExifLabel.Text = s.ImagePreviewPanel_EXIF_Text;
             m_imageExifLabel.Visible = false;
 
-            m_pathLabel = new Label();
+            m_pathLabel = new();
             m_pathLabel.Location = new Point(0, 0);
             m_pathLabel.Dock = DockStyle.Fill;
             m_pathLabel.BorderStyle = BorderStyle.Fixed3D;
             m_pathLabel.Padding = new Padding(1, 3, 1, 0);
-            m_pathLabel.AutoEllipsis = true;
+            m_pathLabel.AutoEllipsis = true;            
             m_pathLabel.DoubleClick += new EventHandler(RenameImage);
 
             m_toolTip = new ToolTip();
@@ -199,55 +201,37 @@ namespace AntiDupl.NET
                 updateCurrent = UpdateImageInfo(ref m_currentImageInfo, currentImageInfo);
                 updateNeighbour = UpdateImageInfo(ref m_neighbourImageInfo, neighbourImageInfo);
             }
-            if (updateCurrent)
-            {
+
+            if (updateCurrent) {
                 m_pictureBoxPanel.UpdateImage(currentImageInfo);
                 m_fileSizeLabel.Text = m_currentImageInfo.GetFileSizeString();
                 m_imageSizeLabel.Text = m_currentImageInfo.GetImageSizeString();
                 m_imageBlocknessLabel.Text = m_currentImageInfo.GetBlockinessString();
                 m_imageBlurringLabel.Text = m_currentImageInfo.GetBlurringString();
                 m_imageTypeLabel.Text = m_currentImageInfo.type == CoreDll.ImageType.None ? "   " : m_currentImageInfo.GetImageTypeString();
-                if (currentImageInfo.exifInfo.isEmpty == CoreDll.FALSE)
-                {
+
+                if (currentImageInfo.exifInfo.isEmpty == CoreDll.FALSE) {
                     m_imageExifLabel.Visible = true;
                     SetExifTooltip(currentImageInfo);
-                }
-                else
-                    m_imageExifLabel.Visible = false;
+                } else {
+                  m_imageExifLabel.Visible = false;
+								}
+                    
                 m_pathLabel.Text = m_currentImageInfo.path;
-                if (m_neighbourImageInfo != null) //подсветка highlight
-                {
-                    m_imageSizeLabel.ForeColor =
-                            m_currentImageInfo.height * m_currentImageInfo.width < m_neighbourImageInfo.height * m_neighbourImageInfo.width ?
-                            Color.Red : TableLayoutPanel.DefaultForeColor;
-                    m_imageTypeLabel.ForeColor = m_currentImageInfo.type != m_neighbourImageInfo.type ?
-                            Color.Red : TableLayoutPanel.DefaultForeColor;
-                    m_fileSizeLabel.ForeColor = m_currentImageInfo.size < m_neighbourImageInfo.size ?
-                            Color.Red : TableLayoutPanel.DefaultForeColor;
-                    m_imageBlocknessLabel.ForeColor = m_currentImageInfo.blockiness > m_neighbourImageInfo.blockiness ?
-                            Color.Red : TableLayoutPanel.DefaultForeColor;
-                    m_imageBlurringLabel.ForeColor = m_currentImageInfo.blurring > m_neighbourImageInfo.blurring ?
-                            Color.Red : TableLayoutPanel.DefaultForeColor;
-                    m_imageExifLabel.ForeColor = ExifEqual(m_currentImageInfo.exifInfo, m_neighbourImageInfo.exifInfo) ?
-                        TableLayoutPanel.DefaultForeColor : Color.Red;
-                }
             }
-            else if (m_neighbourImageInfo != null)
-            {
-                m_imageSizeLabel.ForeColor = m_currentImageInfo.height * m_currentImageInfo.width < m_neighbourImageInfo.height * m_neighbourImageInfo.width ?
-                        Color.Red : TableLayoutPanel.DefaultForeColor;
-                m_imageTypeLabel.ForeColor = m_currentImageInfo.type != m_neighbourImageInfo.type ?
-                        Color.Red : TableLayoutPanel.DefaultForeColor;
-                m_fileSizeLabel.ForeColor = m_currentImageInfo.size < m_neighbourImageInfo.size ?
-                        Color.Red : TableLayoutPanel.DefaultForeColor;
-                m_imageBlocknessLabel.ForeColor = m_currentImageInfo.blockiness > m_neighbourImageInfo.blockiness ?
-                        Color.Red : TableLayoutPanel.DefaultForeColor;
-                m_imageBlurringLabel.ForeColor = m_currentImageInfo.blurring > m_neighbourImageInfo.blurring ?
-                        Color.Red : TableLayoutPanel.DefaultForeColor;
-                m_imageExifLabel.ForeColor = ExifEqual(m_currentImageInfo.exifInfo, m_neighbourImageInfo.exifInfo) ?
-                    TableLayoutPanel.DefaultForeColor : Color.Red;
-            }
-            if (updateCurrent || updateNeighbour)
+
+			      if (m_neighbourImageInfo != null) {
+              Highlight hl = new(m_currentImageInfo, m_neighbourImageInfo, TableLayoutPanel.DefaultForeColor);
+
+				      m_imageSizeLabel.ForeColor = hl.ImageDimension();
+				      m_imageTypeLabel.ForeColor = hl.ImageType();
+				      m_fileSizeLabel.ForeColor = hl.ImageSize();
+				      m_imageBlocknessLabel.ForeColor = hl.ImageBlockiness();
+				      m_imageBlurringLabel.ForeColor = hl.ImageBlurring();
+				      m_imageExifLabel.ForeColor = hl.ImageExif();
+			      }
+
+			      if (updateCurrent || updateNeighbour)
             {
                 Size neighbourSizeMax = new Size(0, 0);
                 if(m_neighbourImageInfo != null)
@@ -497,23 +481,7 @@ namespace AntiDupl.NET
             }
         }
 
-        /// <summary>
-        /// Проверка равны ли Exif.
-        /// </summary>
-        private bool ExifEqual(CoreDll.adImageExifW imageExif1, CoreDll.adImageExifW imageExif2)
-        {
-            if (imageExif1.isEmpty == imageExif2.isEmpty &&
-                imageExif1.artist.CompareTo(imageExif2.artist) == 0 &&
-                imageExif1.dateTime.CompareTo(imageExif2.dateTime) == 0 &&
-                imageExif1.equipMake.CompareTo(imageExif2.equipMake) == 0 &&
-                imageExif1.equipModel.CompareTo(imageExif2.equipModel) == 0 &&
-                imageExif1.imageDescription.CompareTo(imageExif2.imageDescription) == 0 &&
-                imageExif1.softwareUsed.CompareTo(imageExif2.softwareUsed) == 0 &&
-                imageExif1.userComment.CompareTo(imageExif2.userComment) == 0)
-                return true;
-
-            return false;
-        }
+        
 
         public ComparableBitmap[] GetImageFragments()
         {

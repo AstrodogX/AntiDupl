@@ -32,6 +32,7 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Diagnostics;
 using System.ComponentModel;
+using AntiDupl.NET.Common;
 
 namespace AntiDupl.NET
 {
@@ -191,45 +192,22 @@ namespace AntiDupl.NET
                 {
                 }
             }
-            
-            static private AntiDupl.NET.Strings Load(string path)
-            {
-                FileInfo fileInfo = new FileInfo(path);
-                if (fileInfo.Exists)
-                {
-                    try
-                    {
-                        XmlSerializer xmlSerializer = new XmlSerializer(typeof(AntiDupl.NET.Strings));
-                        FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
-                        AntiDupl.NET.Strings strings = (AntiDupl.NET.Strings)xmlSerializer.Deserialize(fileStream);
-                        fileStream.Close();
-                        return strings;
-                    }
-                    catch
-                    {
-                        return null;
-                    }
-                }
-                else
-                    return null;
-            }
 
-            static private void Save(AntiDupl.NET.Strings strings)
-            {
-                try
-                {
+			private static AntiDupl.NET.Strings Load(string path)
+			{
+        Serializer.Custom serializer = new();
+        serializer.UseAttributes = true;
+        return serializer.Deserialize<AntiDupl.NET.Strings>(path);
+			}
 
-                    TextWriter writer = new StreamWriter(GetPath(Path, strings.Name, Extension));
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(AntiDupl.NET.Strings));
-                    xmlSerializer.Serialize(writer, strings);
-                    writer.Close();
-                }
-                catch
-                {
-                }
-            }
+			private static void Save(AntiDupl.NET.Strings strings)
+			{
+        Serializer.Custom serializer = new();
+        serializer.UseAttributes = true;
+        serializer.Serialize(strings, GetPath(Path, strings.Name, Extension));
+			}
 
-            static private string Path { get { return string.Format("{0}\\strings", Resources.Path); } }
+			      static private string Path { get { return string.Format("{0}\\strings", Resources.Path); } }
 
             static private string Extension { get { return ".xml"; } }
 

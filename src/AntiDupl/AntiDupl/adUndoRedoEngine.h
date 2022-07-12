@@ -52,6 +52,7 @@ namespace ad
         ~TUndoRedoEngine();
 
         bool ApplyTo(adLocalActionType localActionType, adTargetType targetType);
+        bool applyToCurrent(adLocalActionType localActionType, adRenameCurrentType renameCurrentType);
 
         bool Undo();
         bool Redo();
@@ -81,6 +82,8 @@ namespace ad
 		bool RenameLike(TImageInfo *pOldImageInfo, TImageInfo *pNewImageInfo);
 		bool Move(TImageInfo *pOldImageInfo, TImageInfo *pNewImageInfo);
 		bool MoveAndRenameLike(TImageInfo *pOldImageInfo, TImageInfo *pNewImageInfo);
+
+    bool changeNumber(TImageInfo *pImageInfo, int start, int delta);
 
         TOptions *m_pOptions;
         TRecycleBin *m_pRecycleBin;

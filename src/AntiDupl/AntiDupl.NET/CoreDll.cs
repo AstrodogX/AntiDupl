@@ -180,6 +180,9 @@ namespace AntiDupl.NET
             MoveAndRenameSecondToFirst = 11,
             PerformHint = 12,
             Mistake = 13,
+            RemoveNumber = 14,
+            IncNumber = 15,
+            DecNumber = 16
         }
 
         public enum ActionEnableType : int
@@ -568,6 +571,11 @@ namespace AntiDupl.NET
         public delegate Error adResultApplyTo_fn(IntPtr handle, LocalActionType localActionType, TargetType targetType);
         [DynamicModuleApi]
         public adResultApplyTo_fn adResultApplyTo = null;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        public delegate Error adResultApplyToCurrent_fn(IntPtr handle, LocalActionType localActionType, RenameCurrentType renameCurrentType);
+        [DynamicModuleApi]
+        public adResultApplyToCurrent_fn adResultApplyToCurrent = null;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         public delegate Error adCanApply_fn(IntPtr handle, ActionEnableType actionEnableType, IntPtr pEnable);

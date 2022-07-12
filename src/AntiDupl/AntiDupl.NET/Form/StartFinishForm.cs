@@ -33,15 +33,12 @@ namespace AntiDupl.NET
 {
     public class StartFinishForm : Form
     {
-        static private TimeSpan VIEW_START_TIME_MIN = TimeSpan.FromSeconds(3.0);
-
         private enum State
         {
             Start,
             LoadImages,
             LoadMistakes,
             LoadResults,
-            ViewStart,
             SaveImages,
             SaveMistakes,
             SaveResults,
@@ -68,7 +65,7 @@ namespace AntiDupl.NET
 
         private void InitializeComponent()
         {
-            ClientSize = new System.Drawing.Size(310, 255);
+            ClientSize = new System.Drawing.Size(310, 285);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.CenterScreen;
             ShowInTaskbar = false;
@@ -103,20 +100,11 @@ namespace AntiDupl.NET
 
         private void CoreStartThreadTask()
         {
-            DateTime startTime = DateTime.Now;
-
             m_state = State.LoadMistakes;
             m_core.Load(CoreDll.FileType.MistakeDataBase, Options.GetMistakeDataBaseFileName(), m_options.checkMistakesAtLoading);
 
             m_state = State.LoadResults;
             m_core.Load(CoreDll.FileType.Result, m_options.GetResultsFileName(), m_options.checkResultsAtLoading);
-
-            TimeSpan viewTime = DateTime.Now - startTime;
-            if (viewTime < VIEW_START_TIME_MIN)
-            {
-                m_state = State.ViewStart;
-                Thread.Sleep(VIEW_START_TIME_MIN - viewTime);
-            }
 
             m_state = State.Finish;
         }
@@ -157,63 +145,56 @@ namespace AntiDupl.NET
 
         void TimerCallback(Object obj, EventArgs eventArgs)
         {
-            if (m_state == State.Finish)
-            {
+            if (m_state == State.Finish) {
                 Close();
+                return;
             }
-            else if(m_state == State.ViewStart)
-            {
-                m_progressBar.Visible = false;
-                Text = Application.ProductName;
-            }
-            else
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.Append(Application.ProductName);
-                builder.Append(" - ");
+               
+            StringBuilder builder = new StringBuilder();
+            builder.Append(Application.ProductName);
+            builder.Append(" - ");
 
-                Strings s = Resources.Strings.Current;
-                switch (m_state)
-                {
-                    case State.Start:
-                    case State.LoadImages:
-                        builder.Append(s.StartFinishForm_LoadImages_Text);
-                        break;
-                    case State.LoadMistakes:
-                        builder.Append(s.StartFinishForm_LoadMistakes_Text);
-                        break;
-                    case State.LoadResults:
-                        builder.Append(s.StartFinishForm_LoadResults_Text);
-                        break;
-                    case State.SaveImages:
-                        builder.Append(s.StartFinishForm_SaveImages_Text);
-                        break;
-                    case State.SaveMistakes:
-                        builder.Append(s.StartFinishForm_SaveMistakes_Text);
-                        break;
-                    case State.SaveResults:
-                        builder.Append(s.StartFinishForm_SaveResults_Text);
-                        break;
-                    case State.ClearResults:
-                    case State.ClearTemporary:
-                        builder.Append(s.StartFinishForm_ClearTemporary_Text);
-                        break;
-                }
-                Text = builder.ToString();
-
-                CoreStatus status = m_core.StatusGet(CoreDll.ThreadType.Main, 0);
-                if (status != null)
-                {
-                    if (status.total > 0)
-                    {
-                        m_progressBar.Value = status.current * m_progressBar.Maximum / status.total;
-                    }
-                    else
-                    {
-                        m_progressBar.Value = 0;
-                    }
-                }
+            Strings s = Resources.Strings.Current;
+            switch (m_state)
+            {
+                case State.Start:
+                case State.LoadImages:
+                    builder.Append(s.StartFinishForm_LoadImages_Text);
+                    break;
+                case State.LoadMistakes:
+                    builder.Append(s.StartFinishForm_LoadMistakes_Text);
+                    break;
+                case State.LoadResults:
+                    builder.Append(s.StartFinishForm_LoadResults_Text);
+                    break;
+                case State.SaveImages:
+                    builder.Append(s.StartFinishForm_SaveImages_Text);
+                    break;
+                case State.SaveMistakes:
+                    builder.Append(s.StartFinishForm_SaveMistakes_Text);
+                    break;
+                case State.SaveResults:
+                    builder.Append(s.StartFinishForm_SaveResults_Text);
+                    break;
+                case State.ClearResults:
+                case State.ClearTemporary:
+                    builder.Append(s.StartFinishForm_ClearTemporary_Text);
+                    break;
             }
+            Text = builder.ToString();
+
+            CoreStatus status = m_core.StatusGet(CoreDll.ThreadType.Main, 0);
+            if (status != null)
+            {
+                if (status.total > 0)
+                {
+                    m_progressBar.Value = status.current * m_progressBar.Maximum / status.total;
+                }
+                else
+                {
+                    m_progressBar.Value = 0;
+                }
+            }            
         }
 
         private void OnFormClosed(object sender, FormClosedEventArgs e)

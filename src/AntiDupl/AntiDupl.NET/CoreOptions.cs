@@ -28,6 +28,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
+using AntiDupl.NET.Common;
 
 namespace AntiDupl.NET
 {
@@ -37,6 +38,7 @@ namespace AntiDupl.NET
         public CoreCompareOptions compareOptions;
         public CoreDefectOptions defectOptions;
         public CoreAdvancedOptions advancedOptions;
+        public OptionsBranches.Naming Naming = new OptionsBranches.Naming();
 
         public CorePathWithSubFolder[] searchPath;
         public CorePathWithSubFolder[] ignorePath;
@@ -229,49 +231,25 @@ namespace AntiDupl.NET
             return true;
         }
 
-        static public CoreOptions Load(string fileName, CoreLib core, bool onePath)
-        {
-            FileInfo fileInfo = new FileInfo(fileName);
-            if (fileInfo.Exists)
-            {
-                FileStream fileStream = null;
-                try
-                {
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(CoreOptions));
-                    fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-                    CoreOptions coreOptions = (CoreOptions)xmlSerializer.Deserialize(fileStream);
-                    fileStream.Close();
-                    coreOptions.Validate(core, onePath);
-                    return coreOptions;
-                }
-                catch
-                {
-                    if(fileStream != null)
-                        fileStream.Close();
-                    return new CoreOptions(core);
-                }
-            }
-            else
-                return new CoreOptions(core);
-        }
+		public static CoreOptions Load(string fileName, CoreLib core, bool onePath)
+		{
+      CoreOptions result = Serializer.Deserialize<CoreOptions>(fileName);
+			
+      if (result == null) {
+        return new CoreOptions(core);
+			}
 
-        public void Save(string fileName)
-        {
-            TextWriter writer = null;
-            try
-            {
-                writer = new StreamWriter(fileName);
-                XmlSerializer xmlSerializer = new XmlSerializer(typeof(CoreOptions));
-                xmlSerializer.Serialize(writer, this);
-            }
-            catch
-            {
-            }
-            if (writer != null)
-                writer.Close();
-        }
+      result.Validate(core, onePath);
 
-        public string GetImageDataBasePath()
+			return result;
+		}
+
+		public void Save(string fileName)
+		{
+      Serializer.Serialize(this, fileName);
+		}
+
+		public string GetImageDataBasePath()
         {
             string directory = string.Format("{0}\\images\\{1}x{1}", Resources.UserPath, advancedOptions.reducedImageSize);
             DirectoryInfo directoryInfo = new DirectoryInfo(directory);

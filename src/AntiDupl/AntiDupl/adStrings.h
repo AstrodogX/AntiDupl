@@ -49,6 +49,9 @@ namespace ad
 		
 		void TString::Trim();
 
+		void trimLeft();
+		void trimRight();
+
 		std::string ToString() const; // Convert TString to ANSI string 
 		std::wstring ToWString() const; // Convert TString to UNICODE string
 

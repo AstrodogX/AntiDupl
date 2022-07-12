@@ -122,6 +122,47 @@ namespace ad
 
         return true;
     }
+
+		bool TUndoRedoEngine::applyToCurrent(adLocalActionType localActionType, adRenameCurrentType renameCurrentType)
+		{
+			TResult *pResult = m_pCurrent->results[m_pCurrent->currentIndex];
+			TImageInfo *pImageInfo = renameCurrentType == AD_RENAME_CURRENT_FIRST ? pResult->first : pResult->second;
+
+			switch (localActionType) {
+			  case AD_LOCAL_ACTION_REMOVE_NUMBER:
+        {
+          TString path = removeNumberSuffix(pImageInfo->path);
+          if (IsFileExists(path.c_str())) {
+            return false;
+          }
+          return Rename(pImageInfo, path);
+        }				  
+
+			  case AD_LOCAL_ACTION_INC_NUMBER:
+				  return this->changeNumber(pImageInfo, 1, 1);
+
+			  case AD_LOCAL_ACTION_DEC_NUMBER:
+				  return this->changeNumber(pImageInfo, -1, -1);
+			}
+
+			return false;
+		}
+
+		bool TUndoRedoEngine::changeNumber(TImageInfo *pImageInfo, int start, int delta)
+		{
+			TString path;
+			int value = start;
+			bool changed = false;
+			do {
+				path = changeNumberSuffix(pImageInfo->path, value, true, &changed);
+				if (changed == false) {
+					return true;
+				}
+				value += delta;
+			} while (IsFileExists(path.c_str()));
+
+			return Rename(pImageInfo, path);
+		}
     
 	// private Переименовывает/перемещает файл с заменой
     bool TUndoRedoEngine::Rename(TImageInfo *pImageInfo, const TString & newFileName)
@@ -232,18 +273,34 @@ namespace ad
 		const TChar *oldPath = pOldImageInfo->path.Original().c_str();
         const TChar *newPath = pNewImageInfo->path.Original().c_str();
 
-		if(pOldImageInfo->removed || !IsFileExists(oldPath))
+        if (pOldImageInfo->removed || IsFileExists(oldPath) == false) {
             return false;
+        }
 
 		// если новый путь пустой
-        if(newPath == TString())
+        if (newPath == TString()) {
             return false;
+        }
+
+        const TString old_name = pOldImageInfo->path.GetName(false);
+        TString new_name = pNewImageInfo->path.GetName(false);
 
 		//если имена без расширений равны
-		if (pNewImageInfo->path.GetName(false) == pOldImageInfo->path.GetName(false))
-			return false;
+        if (new_name == old_name) {
+            return false;
+        }
 
-		TString target = CreatePath(pOldImageInfo->path.GetDirectory(), pNewImageInfo->path.GetName(false) + pOldImageInfo->path.GetExtension());
+        TString old_pattern_name = extractPatternGroup(old_name);
+        if (old_pattern_name != TString()) {
+            TString new_pattern_name = extractPatternGroup(new_name);
+            if (new_pattern_name != TString()) {
+                new_name = replacePatternGroup(old_name, new_pattern_name);
+            } else {
+                new_name = replacePatternGroup(old_name, new_name);
+            }
+        }
+
+		TString target = CreatePath(pOldImageInfo->path.GetDirectory(), new_name + pOldImageInfo->path.GetExtension());
 		if (IsFileExists(target.c_str()))
 			target = GetSimilarPath(TPath(target));
 
@@ -551,6 +608,9 @@ namespace ad
                 m_pMistakeStorage->Add(pResult->first, pResult->second);
                 m_pCurrent->change->mistakenResults.push_back(pResult);
                 return true;
+
+                /*case AD_LOCAL_ACTION_REMOVE_NUMBER:
+                  return Rename(pResult->first, pResult->second);*/
             }
         }
         return false;

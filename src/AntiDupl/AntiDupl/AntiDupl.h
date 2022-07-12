@@ -240,7 +240,10 @@ extern "C"
 		AD_LOCAL_ACTION_MOVE_AND_RENAME_FIRST_TO_SECOND = 10,
         AD_LOCAL_ACTION_MOVE_AND_RENAME_SECOND_TO_FIRST = 11,
         AD_LOCAL_ACTION_PERFORM_HINT = 12,
-        AD_LOCAL_ACTION_MISTAKE = 13,
+        AD_LOCAL_ACTION_MISTAKE = 13,        
+        AD_LOCAL_ACTION_REMOVE_NUMBER = 14,
+        AD_LOCAL_ACTION_INC_NUMBER = 15,
+        AD_LOCAL_ACTION_DEC_NUMBER = 16,
         AD_LOCAL_ACTION_SIZE
     };
 
@@ -622,6 +625,7 @@ extern "C"
     DLLAPI adError adResultSort(adEngineHandle handle, adSortType sortType, adBool increasing);
     DLLAPI adError adResultApply(adEngineHandle handle, adGlobalActionType globalActionType);
     DLLAPI adError adResultApplyTo(adEngineHandle handle, adLocalActionType localActionType, adTargetType targetType);
+    DLLAPI adError adResultApplyToCurrent(adEngineHandle handle, adLocalActionType localActionType, adRenameCurrentType renameCurrentType);
     DLLAPI adError adCanApply(adEngineHandle handle, adActionEnableType actionEnableType, adBoolPtr pEnable);
 
     DLLAPI adError adRenameCurrentA(adEngineHandle handle, adRenameCurrentType renameCurrentType, const adCharA* newFileName);

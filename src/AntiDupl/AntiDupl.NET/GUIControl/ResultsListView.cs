@@ -28,6 +28,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.ComponentModel;
 using System.IO;
+using System.Diagnostics;
 
 namespace AntiDupl.NET
 {
@@ -271,6 +272,14 @@ namespace AntiDupl.NET
             m_makeAction = false;
         }
 
+        public void MakeAction(CoreDll.LocalActionType action, CoreDll.RenameCurrentType renameCurrentType)
+        {
+            m_makeAction = true;
+            ProgressForm progressForm = new ProgressForm(action, renameCurrentType, m_core, m_options, m_coreOptions, m_mainSplitContainer);
+            progressForm.Execute();
+            m_makeAction = false;
+        }
+
         public void RefreshResults()
         {
             ProgressForm progressForm = new ProgressForm(ProgressForm.Type.RefreshResults, m_core, m_options, m_coreOptions, m_mainSplitContainer);
@@ -310,6 +319,29 @@ namespace AntiDupl.NET
             m_makeAction = false;
         }
 
+        public void QuickRename()
+        {
+          CoreResult current = GetCurrentResult();
+          if (current != null) {
+            Forms.QuickRenameForm form = new(current);
+            DialogResult result = form.ShowDialog();
+            if (result == DialogResult.OK) {
+              {
+                string path = form.FirstPath;
+                if (File.Exists(path) == false) {
+                  RenameCurrent(CoreDll.RenameCurrentType.First, path);
+							  }
+              }
+              {
+                string path = form.SecondPath;
+                if (File.Exists(path) == false) {
+                  RenameCurrent(CoreDll.RenameCurrentType.Second, path);
+							  }
+              }
+						}
+					}          
+				}
+
         /// <summary>
         /// MakeAction by hotkey.
         /// </summary>
@@ -334,28 +366,30 @@ namespace AntiDupl.NET
             {
                 if (m_results[m_currentRowIndex].type == CoreDll.ResultType.DefectImage)
                 {
-                    if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.CurrentDefectDelete])
+                    if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.CurrentDefectDelete))
                         MakeAction(CoreDll.LocalActionType.DeleteDefect, CoreDll.TargetType.Current);
-                    else if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.CurrentMistake])
+                    else if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.CurrentMistake))
                         MakeAction(CoreDll.LocalActionType.Mistake, CoreDll.TargetType.Current);
                     return;
                 }
                 if (m_results[m_currentRowIndex].type == CoreDll.ResultType.DuplImagePair)
                 {
-                    if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.CurrentDuplPairDeleteFirst])
+                    if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.CurrentDuplPairDeleteFirst))
                         MakeAction(CoreDll.LocalActionType.DeleteFirst, CoreDll.TargetType.Current);
-                    else if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.CurrentDuplPairDeleteSecond])
+                    else if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.CurrentDuplPairDeleteSecond))
                         MakeAction(CoreDll.LocalActionType.DeleteSecond, CoreDll.TargetType.Current);
-                    else if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.CurrentDuplPairDeleteBoth])
+                    else if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.CurrentDuplPairDeleteBoth))
                         MakeAction(CoreDll.LocalActionType.DeleteBoth, CoreDll.TargetType.Current);
-                    else if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.CurrentDuplPairRenameFirstToSecond])
+                    else if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.CurrentDuplPairRenameFirstToSecond))
                         MakeAction(CoreDll.LocalActionType.RenameFirstToSecond, CoreDll.TargetType.Current);
-                    else if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.CurrentDuplPairRenameSecondToFirst])
+                    else if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.CurrentDuplPairRenameSecondToFirst))
                         MakeAction(CoreDll.LocalActionType.RenameSecondToFirst, CoreDll.TargetType.Current);
-                    else if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.CurrentMistake])
+                    else if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.CurrentMistake))
                         MakeAction(CoreDll.LocalActionType.Mistake, CoreDll.TargetType.Current);
-                    else if (hotKey == m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.ShowNeighbours])
+                    else if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.ShowNeighbours))
                         m_options.resultsOptions.ShowNeighboursImages = !m_options.resultsOptions.ShowNeighboursImages;
+                    else if (hotKey == m_options.hotKeyOptions.Binding(HotKeyOptions.Action.QuickRename))
+                      QuickRename();
                     return;
                 }
             }

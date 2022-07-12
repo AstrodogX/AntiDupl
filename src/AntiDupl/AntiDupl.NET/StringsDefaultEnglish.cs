@@ -29,6 +29,15 @@ namespace AntiDupl.NET
 {
     static public class StringsDefaultEnglish
     {
+        static public Dictionary<string, string> Table = new Dictionary<string, string> {
+          ["options/naming"] = "Naming",
+          ["options/naming/number_separator"] = "Separator for automatically adding numbers",
+          ["menu/number/remove"] = "Remove number suffix",
+          ["menu/number/inc"] = "Increment number suffix",
+          ["menu/number/dec"] = "Decrement number suffix",
+          ["menu/edit/quick_rename"] = "Quick file renaming..."
+        };
+
         static public void CopyTo(Strings s)
         {
             s.Name = "English";
@@ -78,7 +87,7 @@ namespace AntiDupl.NET
             s.CoreOptionsForm_WebpCheckBox_Text = "WEBP";
             s.CoreOptionsForm_SearchSystemCheckBox_Text = "Search system folders/files";
             s.CoreOptionsForm_SearchHiddenCheckBox_Text = "Search hidden folders/files";
-
+               
             s.CoreOptionsForm_CompareTabPage_Text = "Compare";
             s.CoreOptionsForm_CheckOnEqualityCheckBox_Text = "Search image dupls";
             s.CoreOptionsForm_TransformedImageCheckBox_Text = "Search rotated and mirror image dupls";

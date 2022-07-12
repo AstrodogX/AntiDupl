@@ -51,6 +51,7 @@ namespace AntiDupl.NET
         private ToolStripMenuItem m_edit_undoMenuItem;
         private ToolStripMenuItem m_edit_redoMenuItem;
         private ToolStripMenuItem m_edit_selectAllMenuItem;
+        private ToolStripMenuItem m_edit_quickRename;
 
         private ToolStripMenuItem m_viewMenuItem;
         private ToolStripMenuItem m_view_toolMenuItem;
@@ -120,11 +121,17 @@ namespace AntiDupl.NET
             m_edit_redoMenuItem = InitFactory.MenuItem.Create("RedoMenu", null, RedoAction);
             m_edit_selectAllMenuItem = InitFactory.MenuItem.Create(null, null, SelectAllAction);
 
+            m_edit_quickRename = InitFactory.MenuItem.Create(null, null, (object sender, EventArgs e) => {
+              m_mainSplitContainer.resultsListView.QuickRename();
+            });
+
             m_editMenuItem = new ToolStripMenuItem();
             m_editMenuItem.DropDownItems.Add(m_edit_undoMenuItem);
             m_editMenuItem.DropDownItems.Add(m_edit_redoMenuItem);
             m_editMenuItem.DropDownItems.Add(new ToolStripSeparator());
             m_editMenuItem.DropDownItems.Add(m_edit_selectAllMenuItem);
+            m_editMenuItem.DropDownItems.Add(new ToolStripSeparator());
+            m_editMenuItem.DropDownItems.Add(m_edit_quickRename);
 
             m_view_toolMenuItem = InitFactory.MenuItem.Create(null, null, ViewItemCheckChangeAction, m_options.mainFormOptions.toolStripView);
             m_view_statusMenuItem = InitFactory.MenuItem.Create(null, null, ViewItemCheckChangeAction, m_options.mainFormOptions.statusStripView);
@@ -193,6 +200,15 @@ namespace AntiDupl.NET
             Items.Add(m_newVersionMenuItem);
         }
 
+    private void LocalizeItem(ToolStripMenuItem item, string text, HotKeyOptions.Action action)
+    {
+      Keys keys = m_options.hotKeyOptions.Binding(action);
+      if (keys != Keys.None) {
+        text += string.Format(" ({0})", keys.ToString().Replace(',', '+'));
+			}
+      item.Text = text;
+		}
+
         private void UpdateStrings()
         {
             Strings s = Resources.Strings.Current;
@@ -209,6 +225,8 @@ namespace AntiDupl.NET
             m_edit_redoMenuItem.Text = s.MainMenu_Edit_RedoMenuItem_Text;
             m_edit_selectAllMenuItem.Text = s.MainMenu_Edit_SelectAllMenuItem_Text;
 
+      LocalizeItem(m_edit_quickRename, s.Value("menu/edit/quick_rename"), HotKeyOptions.Action.QuickRename);
+
             m_viewMenuItem.Text = s.MainMenu_ViewMenuItem_Text;
             m_view_toolMenuItem.Text = s.MainMenu_View_ToolMenuItem_Text;
             m_view_statusMenuItem.Text = s.MainMenu_View_StatusMenuItem_Text;
@@ -216,11 +234,8 @@ namespace AntiDupl.NET
             m_view_hotKeysMenuItem.Text = s.MainMenu_View_HotKeysMenuItem_Text;
             m_view_stretchSmallImageMenuItem.Text = s.MainMenu_View_StretchSmallImagesMenuItem_Text;
             m_view_proportionalImageViewMenuItem.Text = s.MainMenu_View_ProportionalImageSizeMenuItem_Text;
-            if (m_options.hotKeyOptions.keys.Length > (int)HotKeyOptions.Action.ShowNeighbours &&
-                m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.ShowNeighbours] != null)
-                    m_view_showNeighbourImageMenuItem.Text = s.MainMenu_View_ShowNeighbourImageMenuItem_Text + String.Format(" ({0})", m_options.hotKeyOptions.keys[(int)HotKeyOptions.Action.ShowNeighbours].ToString().Replace(',', '+'));
-            else
-                m_view_showNeighbourImageMenuItem.Text = s.MainMenu_View_ShowNeighbourImageMenuItem_Text;
+
+      LocalizeItem(m_view_showNeighbourImageMenuItem, s.MainMenu_View_ShowNeighbourImageMenuItem_Text, HotKeyOptions.Action.ShowNeighbours);
 
             m_searchMenuItem.Text = s.MainMenu_SearchMenuItem_Text;
             m_search_startMenuItem.Text = s.MainMenu_Search_StartMenuItem_Text;

@@ -28,6 +28,9 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
 using System.Windows.Forms;
+using ExtendedXmlSerializer;
+using ExtendedXmlSerializer.Configuration;
+using AntiDupl.NET.Common;
 
 namespace AntiDupl.NET
 {
@@ -79,32 +82,6 @@ namespace AntiDupl.NET
             return Path.ChangeExtension(coreOptionsFileName, ".adr");
         }
 
-        static public Options Load()
-        {
-            FileInfo fileInfo = new FileInfo(Options.GetOptionsFileName());
-            if (fileInfo.Exists)
-            {
-                FileStream fileStream = null;
-                try
-                {
-                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(Options));
-                    fileStream = new FileStream(Options.GetOptionsFileName(), FileMode.Open, FileAccess.Read);
-                    Options options = (Options)xmlSerializer.Deserialize(fileStream);
-                    options.resultsOptions.Check();
-                    fileStream.Close();
-                    return options;
-                }
-                catch
-                {
-                    if (fileStream != null)
-                        fileStream.Close();
-                    return new Options();
-                }
-            }
-            else
-                return new Options();
-        }
-
         public Options()
         {
         }
@@ -126,23 +103,25 @@ namespace AntiDupl.NET
             saveProfileOnClosing = options.saveProfileOnClosing;
         }
 
-        public void Save()
-        {
-            TextWriter writer = null;
-            try
-            {
-                writer = new StreamWriter(Options.GetOptionsFileName());
-                XmlSerializer xmlSerializer = new XmlSerializer(typeof(Options));
-                xmlSerializer.Serialize(writer, this);
-            }
-            catch
-            {
-            }
-            if (writer != null)
-                writer.Close();
-        }
- 
-        public Options Clone()
+		public static Options Load()
+		{
+			Options result = Serializer.Deserialize<Options>(Options.GetOptionsFileName());
+
+      if (result == null) {
+        return new Options();
+			}
+
+			result.resultsOptions.Check();
+
+			return result;
+		}
+
+		public void Save()
+		{
+			Serializer.Serialize(this, Options.GetOptionsFileName());
+		}
+
+		public Options Clone()
         {
             return new Options(this);
         }
@@ -151,7 +130,7 @@ namespace AntiDupl.NET
         {
             resultsOptions.CopyTo(ref options.resultsOptions);
             mainFormOptions.CopyTo(ref options.mainFormOptions);
-            hotKeyOptions.CopyTo(ref options.hotKeyOptions);
+            options.hotKeyOptions = new(hotKeyOptions);
             options.coreOptionsFileName = (string)coreOptionsFileName.Clone();
 
             options.Language = Language;
@@ -231,7 +210,7 @@ namespace AntiDupl.NET
                 return false;
             if (!mainFormOptions.Equals(options.mainFormOptions))
                 return false;
-            if (!hotKeyOptions.Equals(options.hotKeyOptions))
+            if (!hotKeyOptions.IsEqualsTo(options.hotKeyOptions))
                 return false;
             if (!coreOptionsFileName.Equals(options.coreOptionsFileName))
                 return false;

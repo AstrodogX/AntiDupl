@@ -1,19 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop" ToolsVersion="Current">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
-    <AssemblyVersion>2.3.10.12</AssemblyVersion>
-    <FileVersion>2.3.10.12</FileVersion>
+    <AssemblyVersion>2.3.4.0</AssemblyVersion>
+    <FileVersion>2.3.4.0</FileVersion>
     <Platforms>AnyCPU;x86;x64</Platforms>
     <Company>ErmIg</Company>
     <Copyright>ErmIg © 2002-2018</Copyright>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <StartupObject>AntiDupl.NET.Program</StartupObject>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -22,7 +20,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\..\..\bin\Debug\</OutputPath>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -30,52 +27,52 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\..\..\bin\Release\</OutputPath>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\..\..\bin\Debug\</OutputPath>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <PlatformTarget>x86</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>..\..\..\bin\Debug\</OutputPath>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>..\..\..\bin\Release\</OutputPath>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="$(SolutionDir)\Antidupl.NET\External.cmd $(SolutionDir)\Antidupl.NET" />
   </Target>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="$(SolutionDir)\..\..\cmd\CopyData.cmd $(SolutionDir)\..\.. $(SolutionDir)\..\..\bin\$(ConfigurationName)" />
   </Target>
-
   <ItemGroup>
     <None Remove="Icon.ico" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="Icon.ico" />
   </ItemGroup>
-
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ExtendedXmlSerializer" Version="3.7.6" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\AntiDupl\AntiDupl32.vcxproj" />
+    <ProjectReference Include="..\AntiDupl\AntiDupl64.vcxproj" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Update="Form\AboutProgramForm.cs" />
     <Compile Update="Form\CoreOptionsForm.cs" />
@@ -92,7 +89,6 @@
     <Compile Update="GUIControl\ImagePreviewContextMenu.cs" />
     <Compile Update="GUIControl\ImagePreviewPanel.cs" />
     <Compile Update="GUIControl\LabeledComboBox.cs" />
-    <Compile Update="GUIControl\LabeledIntegerEdit.cs" />
     <Compile Update="GUIControl\LabeledNumericUpDown.cs" />
     <Compile Update="GUIControl\LanguageMenuItem.cs" />
     <Compile Update="GUIControl\MainMenu.cs" />
@@ -116,5 +112,4 @@
     <Compile Update="GUIControl\ThumbnailPreviewContextMenu.cs" />
     <Compile Update="GUIControl\ViewModeMenuItem.cs" />
   </ItemGroup>
-
 </Project>

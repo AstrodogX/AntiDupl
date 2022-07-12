@@ -448,6 +448,12 @@ DLLAPI adError adResultApplyTo(adEngineHandle handle, adLocalActionType localAct
     return handle->Result()->ApplyTo(localActionType, targetType);
 }
 
+DLLAPI adError adResultApplyToCurrent(adEngineHandle handle, adLocalActionType localActionType, adRenameCurrentType renameCurrentType)
+{
+  CHECK_HANDLE CHECK_ACCESS LOCK
+  return handle->Result()->applyToCurrent(localActionType, renameCurrentType);
+}
+
 DLLAPI adError adCanApply(adEngineHandle handle, adActionEnableType actionEnableType, adBoolPtr pEnable)
 {
     CHECK_HANDLE CHECK_ACCESS LOCK

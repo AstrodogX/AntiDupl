@@ -39,24 +39,16 @@ namespace AntiDupl.NET
         const int RIGHT_INTEND = 1;
 
         private Color m_separatorColor = Color.LightGray;
-        private Color m_markerColor = Color.Red;
 
         public Color separatorColor { get { return m_separatorColor; } set { m_separatorColor = value; } }
-        public Color markerColor { get { return m_markerColor; } set { m_markerColor = value; } }
 
-        public enum MarkType
-        {
-            None,
-            First,
-            Second,
-            Both
-        }
-        private MarkType m_markType = MarkType.None;
-        public MarkType markType { get { return m_markType; } set { m_markType = value; } }
+        public Color FirstColor { get; set; }
+        public Color SecondColor { get; set; }
 
+        public DataGridViewContentAlignment Alignment { get { return Style.Alignment; } set { Style.Alignment = value; } }
 
-        private Object m_first;
-        private Object m_second;
+        private readonly Object m_first;
+        private readonly Object m_second;
 
         public DataGridViewDoubleTextBoxCell(Object first, Object second)
         {
@@ -72,41 +64,12 @@ namespace AntiDupl.NET
             base.Paint(graphics, clipBounds, cellBounds, rowIndex, cellState,
               value, formattedValue, errorText, cellStyle, advancedBorderStyle, paintParts);
 
-            Color ordinaryColor, markColor, firstColor, secondColor;
+            Color ordinaryColor;
 
-            if ((cellState & DataGridViewElementStates.Selected) != 0)
-            {
+            if ((cellState & DataGridViewElementStates.Selected) != 0) {
                 ordinaryColor = cellStyle.SelectionForeColor;
-                markColor = m_markerColor;
-            }
-            else
-            {
+            } else {
                 ordinaryColor = cellStyle.ForeColor;
-                markColor = m_markerColor;
-            }
-
-            switch (m_markType)
-            {
-                case MarkType.None:
-                    firstColor = ordinaryColor;
-                    secondColor = ordinaryColor;
-                    break;
-                case MarkType.First:
-                    firstColor = markColor;
-                    secondColor = ordinaryColor;
-                    break;
-                case MarkType.Second:
-                    firstColor = ordinaryColor;
-                    secondColor = markColor;
-                    break;
-                case MarkType.Both:
-                    firstColor = markColor;
-                    secondColor = markColor;
-                    break;
-                default:
-                    firstColor = ordinaryColor;
-                    secondColor = ordinaryColor;
-                    break;
             }
 
             Pen separatorPen = new Pen(m_separatorColor);
@@ -162,13 +125,13 @@ namespace AntiDupl.NET
             Rectangle firstBounds = new Rectangle(
               cellBounds.Left + LEFT_INTEND, cellBounds.Top + TOP_INTEND,
               cellBounds.Width - LEFT_INTEND - RIGHT_INTEND, cellBounds.Height / 2 - TOP_INTEND);
-            graphics.DrawString(m_first.ToString(), cellStyle.Font, new SolidBrush(firstColor),
+            graphics.DrawString(m_first.ToString(), cellStyle.Font, new SolidBrush(FirstColor.IsEmpty ? ordinaryColor : FirstColor),
               firstBounds, format);
 
             Rectangle secondBounds = new Rectangle(
               cellBounds.Left + LEFT_INTEND, separatorX + SEPARATOR_WIDTH + TOP_INTEND,
               cellBounds.Width - LEFT_INTEND - RIGHT_INTEND, cellBounds.Height / 2 - TOP_INTEND);
-            graphics.DrawString(m_second.ToString(), cellStyle.Font, new SolidBrush(secondColor),
+            graphics.DrawString(m_second.ToString(), cellStyle.Font, new SolidBrush(SecondColor.IsEmpty ? ordinaryColor : SecondColor),
               secondBounds, format);
 
             graphics.DrawLine(separatorPen, cellBounds.Left, separatorX, cellBounds.Right - 2, separatorX);
