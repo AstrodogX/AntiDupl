@@ -741,7 +741,7 @@ namespace ad
     return CreatePath(path.GetDirectory(), changeNumberSuffix(path.GetName(false), delta, force, changed) + path.GetExtension());
   }
 
-	static const std::wregex patterns[] = { std::wregex(L"\\[[\\w]+_\\d+\\]\\s*(.*)"), std::wregex(L".*- (.*)\\s*\\([\\w]+_\\d+\\)") };
+	static const std::wregex patterns[] = { std::wregex(L"\\s*\\[\\s*\\w*_?\\d+\\s*\\]\\s*(.*)"), std::wregex(L".* - (.*?)\\s*\\(\\s*[\\w]*_?\\d+\\s*\\)") };
 
 	static bool matchPattern(const TString &text, const std::wregex &pattern, std::wcmatch &match, int index = 1)
 	{
@@ -762,7 +762,9 @@ namespace ad
 	{
 		std::wcmatch match;
 		if (matchPatterns(text, match, index)) {
-			return TString(match[index].first, match[index].second);
+      TString result = TString(match[index].first, match[index].second);
+      result.Trim();
+			return result;
 		}
 		return TString();
 	}

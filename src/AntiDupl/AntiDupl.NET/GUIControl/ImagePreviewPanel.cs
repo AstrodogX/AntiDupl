@@ -105,61 +105,37 @@ namespace AntiDupl.NET
 
             m_pictureBoxPanel = new PictureBoxPanel(m_core, m_options);
             m_pictureBoxPanel.ContextMenuStrip = new ImagePreviewContextMenu(m_core, m_options, m_resultsListView.CoreOptions, this, m_resultsListView);
+
+			static SilentLabel createLabel()
+			{
+				return new() { 
+          Dock = DockStyle.Fill,
+				  BorderStyle = BorderStyle.Fixed3D,
+				  Padding = new Padding(1, 3, 1, 0),
+          Margin = new Padding(IBW, 0, 0, 0),
+				  TextAlign = ContentAlignment.TopCenter,
+				  AutoSize = true
+        };
+			}
+
+			m_fileSizeLabel = createLabel();
+      m_fileSizeLabel.Margin = new Padding(0, 0, 0, 0);
             
-            m_fileSizeLabel = new();
-            m_fileSizeLabel.Dock = DockStyle.Fill;
-            m_fileSizeLabel.BorderStyle = BorderStyle.Fixed3D;
-            m_fileSizeLabel.Padding = new Padding(1, 3, 1, 0);
-            m_fileSizeLabel.TextAlign = ContentAlignment.TopCenter;
-            m_fileSizeLabel.AutoSize = true;
-            
-            m_imageSizeLabel = new();
-            m_imageSizeLabel.Dock = DockStyle.Fill;
-            m_imageSizeLabel.BorderStyle = BorderStyle.Fixed3D;
-            m_imageSizeLabel.Padding = new Padding(1, 3, 1, 0);
-            m_imageSizeLabel.Margin = new Padding(IBW, 0, 0, 0);
-            m_imageSizeLabel.TextAlign = ContentAlignment.TopCenter;
-            m_imageSizeLabel.AutoSize = true;
+      m_imageSizeLabel = createLabel();
+      m_imageBlocknessLabel = createLabel();
+      m_imageBlurringLabel = createLabel();
+      m_imageTypeLabel = createLabel();
 
-            m_imageBlocknessLabel = new();
-            m_imageBlocknessLabel.Dock = DockStyle.Fill;
-            m_imageBlocknessLabel.BorderStyle = BorderStyle.Fixed3D;
-            m_imageBlocknessLabel.Padding = new Padding(1, 3, 1, 0);
-            m_imageBlocknessLabel.Margin = new Padding(IBW, 0, 0, 0);
-            m_imageBlocknessLabel.TextAlign = ContentAlignment.TopCenter;
-            m_imageBlocknessLabel.AutoSize = true;
+      m_imageExifLabel = createLabel();
+      m_imageExifLabel.Text = s.ImagePreviewPanel_EXIF_Text;
+      m_imageExifLabel.Visible = false;
 
-            m_imageBlurringLabel = new();
-            m_imageBlurringLabel.Dock = DockStyle.Fill;
-            m_imageBlurringLabel.BorderStyle = BorderStyle.Fixed3D;
-            m_imageBlurringLabel.Padding = new Padding(1, 3, 1, 0);
-            m_imageBlurringLabel.Margin = new Padding(IBW, 0, 0, 0);
-            m_imageBlurringLabel.TextAlign = ContentAlignment.TopCenter;
-            m_imageBlurringLabel.AutoSize = true;
-
-            m_imageTypeLabel = new();
-            m_imageTypeLabel.Dock = DockStyle.Fill;
-            m_imageTypeLabel.BorderStyle = BorderStyle.Fixed3D;
-            m_imageTypeLabel.Padding = new Padding(1, 3, 1, 0);
-            m_imageTypeLabel.Margin = new Padding(IBW, 0, 0, 0);
-            m_imageTypeLabel.TextAlign = ContentAlignment.TopCenter;
-            m_imageTypeLabel.AutoSize = true;
-
-            m_imageExifLabel = new();
-            m_imageExifLabel.Dock = DockStyle.Fill;
-            m_imageExifLabel.BorderStyle = BorderStyle.Fixed3D;
-            m_imageExifLabel.Padding = new Padding(1, 3, 1, 0);
-            m_imageExifLabel.Margin = new Padding(IBW, 0, 0, 0);
-            m_imageExifLabel.TextAlign = ContentAlignment.TopCenter;
-            m_imageExifLabel.AutoSize = true;
-            m_imageExifLabel.Text = s.ImagePreviewPanel_EXIF_Text;
-            m_imageExifLabel.Visible = false;
-
-            m_pathLabel = new();
-            m_pathLabel.Location = new Point(0, 0);
+            m_pathLabel = new();            
             m_pathLabel.Dock = DockStyle.Fill;
             m_pathLabel.BorderStyle = BorderStyle.Fixed3D;
             m_pathLabel.Padding = new Padding(1, 3, 1, 0);
+
+            m_pathLabel.Location = new Point(0, 0);
             m_pathLabel.AutoEllipsis = true;            
             m_pathLabel.DoubleClick += new EventHandler(RenameImage);
 
@@ -324,10 +300,10 @@ namespace AntiDupl.NET
 
                 infoLayout.Controls.Add(m_fileSizeLabel, 0, 0);
                 infoLayout.Controls.Add(m_imageSizeLabel, 1, 0);
-                infoLayout.Controls.Add(m_imageBlocknessLabel, 2, 0);
-                infoLayout.Controls.Add(m_imageBlurringLabel, 3, 0);
-                infoLayout.Controls.Add(m_imageTypeLabel, 4, 0);
-                infoLayout.Controls.Add(m_imageExifLabel, 5, 0);
+                infoLayout.Controls.Add(m_imageTypeLabel, 2, 0);
+                infoLayout.Controls.Add(m_imageExifLabel, 3, 0);
+                infoLayout.Controls.Add(m_imageBlocknessLabel, 4, 0);
+                infoLayout.Controls.Add(m_imageBlurringLabel, 5, 0);
                 infoLayout.Controls.Add(m_pathLabel, 6, 0);
             }
             else
@@ -345,12 +321,12 @@ namespace AntiDupl.NET
                 infoLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));//imageSizeLabel
                 infoLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));//fileSizeLabel
 
-                infoLayout.Controls.Add(m_pathLabel, 0, 0);
-                infoLayout.Controls.Add(m_imageTypeLabel, 1, 0);
-                infoLayout.Controls.Add(m_imageBlurringLabel, 2, 0);
-                infoLayout.Controls.Add(m_imageBlocknessLabel, 3, 0); 
-                infoLayout.Controls.Add(m_imageSizeLabel, 4, 0);
-                infoLayout.Controls.Add(m_imageExifLabel, 5, 0);
+                infoLayout.Controls.Add(m_pathLabel, 0, 0);                
+                infoLayout.Controls.Add(m_imageBlurringLabel, 1, 0);
+                infoLayout.Controls.Add(m_imageBlocknessLabel, 2, 0); 
+                infoLayout.Controls.Add(m_imageExifLabel, 3, 0);
+                infoLayout.Controls.Add(m_imageTypeLabel, 4, 0);
+                infoLayout.Controls.Add(m_imageSizeLabel, 5, 0);                
                 infoLayout.Controls.Add(m_fileSizeLabel, 6, 0);
             }
 
