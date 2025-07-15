@@ -23,11 +23,12 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using System.Drawing;
-using System.Diagnostics;
-using System.IO;
 
 namespace AntiDupl.NET
 {
@@ -210,10 +211,18 @@ namespace AntiDupl.NET
                     m_animationEnable = false;
                 }
             }
-            if (m_bitmap != null)
-            {
-                e.Graphics.DrawImage(m_bitmap, m_bitmapRect);
+
+            e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            if (m_bitmap.Width < m_bitmapRect.Width && m_bitmap.Height < m_bitmapRect.Height) {
+              e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+            } else {
+              e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
             }
+
+            if (m_bitmap != null) {
+        e.Graphics.DrawImage(m_bitmap, m_bitmapRect);
+      }
             if (m_options.resultsOptions.ShowNeighboursImages)
             {
                 if (m_prevBitmap != null)

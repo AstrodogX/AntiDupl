@@ -296,6 +296,7 @@ namespace AntiDupl.NET
             }
         }
 
+
         [XmlType(TypeName = "ColumnOptions")]
         public struct ColumnOptions
         {
@@ -315,11 +316,6 @@ namespace AntiDupl.NET
         public int splitterDistanceHorizontalNormal;
 
         public System.Drawing.Size thumbnailSizeMax = new System.Drawing.Size(DEFAULT_THUMBNAIL_WIDTH_MAX, DEFAULT_THUMBNAIL_HEIGHT_MAX);
-
-        public ResultsOptions Clone()
-        {
-            return new ResultsOptions(this);
-        }
 
         public ResultsOptions(ResultsOptions options)
         {

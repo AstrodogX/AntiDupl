@@ -21,21 +21,24 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 */
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace AntiDupl.NET
 {
     static public class StringsDefaultEnglish
     {
-        static public Dictionary<string, string> Table = new Dictionary<string, string> {
+        static public readonly Dictionary<string, string> Table = new() {
           ["options/naming"] = "Naming",
           ["options/naming/number_separator"] = "Separator for automatically adding numbers",
           ["menu/number/remove"] = "Remove number suffix",
           ["menu/number/inc"] = "Increment number suffix",
           ["menu/number/dec"] = "Decrement number suffix",
-          ["menu/edit/quick_rename"] = "Quick file renaming..."
+          ["menu/edit/quick_rename"] = "Quick renaming...",
+          ["menu/open/diff"] = "Open both images in the diff tool",
+          ["menu/action/rename_first_like_second"] = "Rename the first picture like the second picture",
+          ["menu/action/rename_second_like_first"] = "Rename the second picture like the first picture",
+          ["menu/action/move_first_to_second"] = "Move the first picture to the second picture directory",
+          ["menu/action/move_second_to_first"] = "Move the second picture to the first picture directory",
         };
 
         static public void CopyTo(Strings s)
@@ -129,7 +132,7 @@ namespace AntiDupl.NET
             s.CoreOptionsForm_DifrentValue_Text = "Value of difference";
             s.CoreOptionsForm_NotHighlightIfFragmentsMoreThemCheckBox_Text = "Not highlight differences if fragments more than:";
             s.CoreOptionsForm_MaxFragmentsForDisableHighlightLabeledIntegerEdit_Text = "Maximum fragments for disable highlight";
-            s.CoreOptionsForm_HighlightAllDifferencesCheckBox_Text = "Highlight all differences";
+            s.CoreOptionsForm_HighlightAllDifferencesCheckBox_Text = "Highlight allrename differences";
             s.CoreOptionsForm_MaxFragmentsForHighlightLabeledIntegerEdit_Text = "Maximum amount of fragments for highlight";
             s.CoreOptionsForm_AmountOfFragmentsOnXLabeledIntegerEdit_Text = "Amount of fragments on X";
             s.CoreOptionsForm_AmountOfFragmentsOnYLabeledIntegerEdit_Text = "Amount of fragments on Y";

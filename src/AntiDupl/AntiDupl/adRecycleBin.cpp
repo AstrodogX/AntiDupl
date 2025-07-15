@@ -57,7 +57,7 @@ namespace ad
                 TRecord *pRecord = new TRecord();
                 pRecord->oldPath = pImageInfo->path.Original();
                 pRecord->newPath = GetUniquePath(pImageInfo->path);
-                if(::MoveFile(pRecord->oldPath.c_str(), pRecord->newPath.c_str()) != FALSE)
+                if(::MoveFile(toLongFilename(pRecord->oldPath.c_str()), toLongFilename(pRecord->newPath.c_str())) != FALSE)
                 {
                     pRecord->attribute = ::GetFileAttributes(pRecord->newPath.c_str());
                     ::SetFileAttributes(pRecord->newPath.c_str(), pRecord->attribute|FILE_ATTRIBUTE_HIDDEN);

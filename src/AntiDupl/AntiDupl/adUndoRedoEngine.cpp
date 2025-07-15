@@ -164,12 +164,15 @@ namespace ad
 			return Rename(pImageInfo, path);
 		}
     
-	// private Переименовывает/перемещает файл с заменой
+	// public Переименовывает/перемещает файл с заменой
     bool TUndoRedoEngine::Rename(TImageInfo *pImageInfo, const TString & newFileName)
     {
 		// Сохраняем состояние
         TUndoRedoChange *pOldChange = m_pCurrent->change;
         m_pCurrent->change = new TUndoRedoChange();
+
+        CreatePathTo(GetFileDirectory(newFileName).c_str());
+
 		// Если удается переименовать/переместить файл с заменой
         if(::MoveFileEx(pImageInfo->path.Original().c_str(), newFileName.c_str(), 
 			MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED) != FALSE)
@@ -494,6 +497,11 @@ namespace ad
         AdjustUndoDequeSize(0);
     }
 
+    TResult *TUndoRedoEngine::currentResult() const
+    {
+      return m_pCurrent->results[m_pCurrent->currentIndex];
+    }
+
     void TUndoRedoEngine::ClearRedo()
     {
         for(TUndoRedoStagePtrDeque::iterator it = m_pRedoDeque->begin(); it != m_pRedoDeque->end(); ++it)
@@ -629,15 +637,6 @@ namespace ad
             return true;
         }
         return false;
-    }
-
-	//public
-    bool TUndoRedoEngine::RenameCurrent(adRenameCurrentType renameCurrentType, const TString & newFileName)
-    {
-        TResult *pResult = m_pCurrent->results[m_pCurrent->currentIndex];
-		// Получаем информацию о файле, который переименовываем
-        TImageInfo *pImageInfo = renameCurrentType == AD_RENAME_CURRENT_FIRST ? pResult->first : pResult->second;
-        return Rename(pImageInfo, newFileName);
     }
 
 	//public Переименовывает файл с заданной группой и индексом.

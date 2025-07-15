@@ -62,20 +62,20 @@ namespace ad
 
         void Clear();
 
-		bool RenameCurrent(adRenameCurrentType renameCurrentType, const TString & newFileName);
         bool Rename(adSize groupId, adSize index, const TString & newFileName);
+        bool Rename(TImageInfo *pImageInfo, const TString &newFileName);
 		bool MoveCurrentGroup(const TString& directory);
 		bool RenameCurrentGroupAs(const TString & fileName);
 
         TUndoRedoStagePtr Current() const {return m_pCurrent;}
+
+        TResult *currentResult() const;
 
     private:
         void ClearRedo();
         void AdjustUndoDequeSize(size_t size);
 
         bool ApplyTo(adLocalActionType localActionType, TResult *pResult);
-
-        bool Rename(TImageInfo *pImageInfo, const TString & newFileName);
 
         bool Delete(TImageInfo *pImageInfo);
         bool Rename(TImageInfo *pOldImageInfo, TImageInfo *pNewImageInfo);

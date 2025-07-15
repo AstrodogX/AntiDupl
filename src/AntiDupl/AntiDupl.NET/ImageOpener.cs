@@ -24,5 +24,20 @@ namespace AntiDupl.NET
                 MessageBox.Show(exeption.Message);
             }
         }
+
+    public static void OpenDiff(string filepath1, string filepath2)
+    {
+			ProcessStartInfo startInfo = new("c:\\Program Files\\Beyond Compare 4\\BCompare.exe") {
+				UseShellExecute = false,
+        ArgumentList = { filepath1, filepath2	}
+			};
+			try {
+        var process = Process.Start(startInfo);
+        Thread.Sleep(System.TimeSpan.FromMilliseconds(100));
+      } catch (System.Exception exeption) {
+        MessageBox.Show(exeption.Message);
+      }
+		}
+
     }
 }

@@ -77,6 +77,8 @@ namespace AntiDupl.NET
 
         public string coreOptionsFileName = GetDefaultCoreOptionsFileName();
 
+    public string diffTool = "";
+
         public string GetResultsFileName()
         {
             return Path.ChangeExtension(coreOptionsFileName, ".adr");
@@ -101,6 +103,8 @@ namespace AntiDupl.NET
             checkMistakesAtLoading = options.checkMistakesAtLoading;
             loadProfileOnLoading = options.loadProfileOnLoading;
             saveProfileOnClosing = options.saveProfileOnClosing;
+
+      diffTool = options.diffTool;
         }
 
 		public static Options Load()
@@ -120,28 +124,6 @@ namespace AntiDupl.NET
 		{
 			Serializer.Serialize(this, Options.GetOptionsFileName());
 		}
-
-		public Options Clone()
-        {
-            return new Options(this);
-        }
-
-        public void CopyTo(ref Options options)
-        {
-            resultsOptions.CopyTo(ref options.resultsOptions);
-            mainFormOptions.CopyTo(ref options.mainFormOptions);
-            options.hotKeyOptions = new(hotKeyOptions);
-            options.coreOptionsFileName = (string)coreOptionsFileName.Clone();
-
-            options.Language = Language;
-            options.onePath = onePath;
-            options.checkingForUpdates = checkingForUpdates;
-            options.useImageDataBase = useImageDataBase;
-            options.checkResultsAtLoading = checkResultsAtLoading;
-            options.checkMistakesAtLoading = checkMistakesAtLoading;
-            options.loadProfileOnLoading = loadProfileOnLoading;
-            options.saveProfileOnClosing = saveProfileOnClosing;
-        }
 
         public static void PathCopy(string[] source, ref string[] destination)
         {
@@ -214,6 +196,10 @@ namespace AntiDupl.NET
                 return false;
             if (!coreOptionsFileName.Equals(options.coreOptionsFileName))
                 return false;
+
+            if (!diffTool.Equals(options.diffTool)) {
+              return false;
+						}
             return true;
         }
     }

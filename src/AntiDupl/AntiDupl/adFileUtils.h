@@ -32,9 +32,13 @@
 
 #define DELIMETER TEXT('\\')
 
+#include <atlstr.h>
+
 namespace ad
 {
     //-------------------------------------------------------------------------
+  CString toLongFilename(const TChar *fileName);
+
     bool FileDelete(const TChar *fileName, bool toRecycle = true);
     bool FileRename(const TChar *oldName, const TChar *newName);
 

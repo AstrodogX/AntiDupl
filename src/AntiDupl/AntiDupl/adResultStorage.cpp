@@ -171,6 +171,17 @@ namespace ad
         return m_pUndoRedoEngine->ApplyTo(localActionType, targetType) ? AD_OK : AD_ERROR_ZERO_TARGET;
     }
 
+    bool ichar_equals(char a, char b)
+    {
+      return std::tolower(static_cast<unsigned char>(a)) ==
+        std::tolower(static_cast<unsigned char>(b));
+    }
+
+    bool iequals(const TString &a, const TString &b)
+    {
+      return std::equal(a.begin(), a.end(), b.begin(), b.end(), ichar_equals);
+    }
+
     adError TResultStorage::RenameCurrent(adRenameCurrentType renameCurrentType, const TString& newFileName)
     {
         if(renameCurrentType < 0 && renameCurrentType >= AD_RENAME_CURRENT_SIZE)
@@ -185,11 +196,16 @@ namespace ad
             renameCurrentType == AD_RENAME_CURRENT_SECOND)
             return AD_ERROR_ZERO_TARGET;
 
-        if(IsFileExists(newFileName.c_str()) || 
-            !IsDirectoryExists(GetFileDirectory(newFileName).c_str()))
-            return AD_ERROR_INVALID_FILE_NAME;
+        // Получаем информацию о файле, который переименовываем
+        TImageInfo *pImageInfo = renameCurrentType == AD_RENAME_CURRENT_FIRST ? pResult->first : pResult->second;
 
-        return m_pUndoRedoEngine->RenameCurrent(renameCurrentType, newFileName) ? AD_OK : AD_ERROR_UNKNOWN;
+        if (IsFileExists(newFileName.c_str())) {
+          if (iequals(newFileName, pImageInfo->path.Original()) == false) {
+            return AD_ERROR_INVALID_FILE_NAME;
+          }
+        }
+        
+        return m_pUndoRedoEngine->Rename(pImageInfo, newFileName) ? AD_OK : AD_ERROR_UNKNOWN;
     }
 
 	adError TResultStorage::MoveCurrentGroup(const TString& directory)

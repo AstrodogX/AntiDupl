@@ -31,8 +31,22 @@
 #include "adPerformance.h"
 #include "adFileUtils.h"
 
+#include <Shlwapi.h>
+
 namespace ad
 {
+  CString toLongFilename(const TChar *fileName)
+  {
+    CString result(fileName);
+    if (PathIsUNC(result)) {
+      result.TrimLeft(_T("\\"));
+      result.Insert(0, _T("\\\\?\\UNC\\"));
+    } else {
+      result.Insert(0, _T("\\\\?\\"));
+    }
+    return result;
+  }
+
     bool FileDelete(const TChar *fileName, bool toRecycle)
     {
         TChar buffer[MAX_PATH + 1];
@@ -43,8 +57,8 @@ namespace ad
         length = _tcsnlen(fileName, MAX_PATH + 1);
         if (length >= MAX_PATH)
         {
-#ifdef UNICODE
-            return ::DeleteFile(fileName) != FALSE;
+#ifdef UNICODE         
+          return ::DeleteFileW(toLongFilename(fileName)) != FALSE;
 #else
             return false;
 #endif

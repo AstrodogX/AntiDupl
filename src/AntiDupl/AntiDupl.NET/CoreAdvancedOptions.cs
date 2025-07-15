@@ -40,6 +40,8 @@ namespace AntiDupl.NET
         public int ignoreFrameWidth;
         public bool useLibJpegTurbo;
 
+    public string diffTool;
+
         public CoreAdvancedOptions()
         {
         }
@@ -56,6 +58,7 @@ namespace AntiDupl.NET
             resultCountMax = advancedOptions.resultCountMax;
             ignoreFrameWidth = advancedOptions.ignoreFrameWidth;
             useLibJpegTurbo = advancedOptions.useLibJpegTurbo;
+      diffTool = advancedOptions.diffTool;
         }
 
         public CoreAdvancedOptions(ref CoreDll.adAdvancedOptions advancedOptions)
@@ -103,7 +106,8 @@ namespace AntiDupl.NET
                 undoQueueSize == advancedOptions.undoQueueSize &&
                 resultCountMax == advancedOptions.resultCountMax &&
                 ignoreFrameWidth == advancedOptions.ignoreFrameWidth &&
-                useLibJpegTurbo == advancedOptions.useLibJpegTurbo;
+                useLibJpegTurbo == advancedOptions.useLibJpegTurbo &&
+                diffTool == advancedOptions.diffTool;
         }
     }
 }

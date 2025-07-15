@@ -34,8 +34,8 @@ namespace AntiDupl.NET
             StringsDefaultEnglish.CopyTo(this);
           Table = StringsDefaultEnglish.Table;
         }
-                
-        public Dictionary<string, string> Table = new Dictionary<string, string>();
+
+        public Dictionary<string, string> Table = new();
 
         public string Value(string key)
         {

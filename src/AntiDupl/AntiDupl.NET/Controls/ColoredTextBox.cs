@@ -1,11 +1,13 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace AntiDupl.NET.Controls
 {
-	public class ColoredTextBox : TextBox
+	[ToolboxItem(true)]
+	public partial class ColoredTextBox : TextBox
 	{
 		private const int WM_NCPAINT = 0x85;
 		private const uint RDW_INVALIDATE = 0x1;

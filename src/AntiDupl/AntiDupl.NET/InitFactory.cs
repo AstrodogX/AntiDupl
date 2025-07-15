@@ -77,28 +77,6 @@ namespace AntiDupl.NET
                 layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
                 return layout;
             }
-
-            public static TableLayoutPanel CreateVerticalCompensatedCenterAlign(int first, int second)
-            {
-                TableLayoutPanel layout = Create(1, 5, 0, 0);
-                layout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-                layout.RowStyles.Add(new RowStyle(SizeType.Absolute, first));
-                layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-                layout.RowStyles.Add(new RowStyle(SizeType.Absolute, second));
-                layout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-                return layout;
-            }
-
-            public static TableLayoutPanel CreateHorizontalCompensatedCenterAlign(int first, int second)
-            {
-                TableLayoutPanel layout = Create(5, 1, 0, 0);
-                layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-                layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, first));
-                layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-                layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, second));
-                layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-                return layout;
-            }
         };
 
         public static class Font

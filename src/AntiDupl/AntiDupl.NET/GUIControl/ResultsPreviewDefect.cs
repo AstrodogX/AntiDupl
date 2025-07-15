@@ -106,13 +106,15 @@ namespace AntiDupl.NET
                 m_deleteButton.Image = Resources.Images.Get("DeleteDefectHorizontalButton");
             }
             m_imageLayout.Controls.Add(m_imagePreviewPanel, 0, 0);
-            
-            m_toolStrip.Items.Add(m_deleteButton);
-            m_toolStrip.Items.Add(new ToolStripSeparator());
-            m_toolStrip.Items.Add(m_previousButton);
-            m_toolStrip.Items.Add(m_nextButton);
-            m_toolStrip.Items.Add(new ToolStripSeparator());
-            m_toolStrip.Items.Add(m_mistakeButton);
+
+      ToolStripItemCollection items = ToolStripMiddle.Items;
+
+            items.Add(m_deleteButton);
+            items.Add(new ToolStripSeparator());
+            items.Add(m_previousButton);
+            items.Add(m_nextButton);
+            items.Add(new ToolStripSeparator());
+            items.Add(m_mistakeButton);
         }
     }
 }

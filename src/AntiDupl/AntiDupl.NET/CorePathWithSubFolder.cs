@@ -42,12 +42,6 @@ namespace AntiDupl.NET
             this.enableSubFolder = enableSubFolder;
         }
 
-        public CorePathWithSubFolder(CorePathWithSubFolder pathWithSubFolder)
-        {
-            enableSubFolder = pathWithSubFolder.enableSubFolder;
-            path = pathWithSubFolder.path;
-        }
-
         public CorePathWithSubFolder(ref CoreDll.adPathWithSubFolderW pathWithSubFolder)
         {
             enableSubFolder = pathWithSubFolder.enableSubFolder != CoreDll.FALSE;
@@ -58,11 +52,6 @@ namespace AntiDupl.NET
         {
             pathWithSubFolder.enableSubFolder = enableSubFolder ? CoreDll.TRUE : CoreDll.FALSE;
             pathWithSubFolder.path = path;
-        }
-
-        public CorePathWithSubFolder Clone()
-        {
-            return new CorePathWithSubFolder(this);
         }
 
         public bool Equals(CorePathWithSubFolder pathWithSubFolder)

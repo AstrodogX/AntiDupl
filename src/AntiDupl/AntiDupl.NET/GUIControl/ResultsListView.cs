@@ -23,12 +23,13 @@
 */
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using System.Drawing;
-using System.ComponentModel;
-using System.IO;
-using System.Diagnostics;
+using Windows.Foundation.Metadata;
 
 namespace AntiDupl.NET
 {
@@ -326,18 +327,8 @@ namespace AntiDupl.NET
             Forms.QuickRenameForm form = new(current);
             DialogResult result = form.ShowDialog();
             if (result == DialogResult.OK) {
-              {
-                string path = form.FirstPath;
-                if (File.Exists(path) == false) {
-                  RenameCurrent(CoreDll.RenameCurrentType.First, path);
-							  }
-              }
-              {
-                string path = form.SecondPath;
-                if (File.Exists(path) == false) {
-                  RenameCurrent(CoreDll.RenameCurrentType.Second, path);
-							  }
-              }
+              RenameCurrent(CoreDll.RenameCurrentType.First, form.FirstPath);
+              RenameCurrent(CoreDll.RenameCurrentType.Second, form.SecondPath);
 						}
 					}          
 				}

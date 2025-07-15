@@ -26,6 +26,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
+using ExtendedXmlSerializer.ContentModel.Reflection;
+using static AntiDupl.NET.ResultsOptions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AntiDupl.NET
 {
@@ -41,8 +44,14 @@ namespace AntiDupl.NET
         protected TableLayoutPanel m_imageLayout;
         protected TableLayoutPanel m_buttonLayout;
 
-        protected ToolStripPanel m_toolStripPanel;
-        protected ToolStrip m_toolStrip;
+    private readonly ToolStrip[] m_tool_strips = new ToolStrip[5];
+    private readonly ToolStripPanel[] m_tool_strip_panels = new ToolStripPanel[5];
+
+    protected ToolStrip ToolStripBegin  { get => m_tool_strips[0]; }
+    protected ToolStrip ToolStripFirst  { get => m_tool_strips[1]; }
+    protected ToolStrip ToolStripMiddle { get => m_tool_strips[2]; }
+    protected ToolStrip ToolStripSecond { get => m_tool_strips[3]; }
+    protected ToolStrip ToolStripEnd    { get => m_tool_strips[4]; }
 
         protected ToolStripButton m_nextButton;
         protected ToolStripButton m_previousButton;
@@ -59,69 +68,114 @@ namespace AntiDupl.NET
             Resources.Strings.OnCurrentChange += new Resources.Strings.CurrentChangeHandler(UpdateStrings); 
         }
 
-        private void InitializeComponents()
-        {
-            m_toolStrip = new ToolStrip();
-            m_toolStrip.GripStyle = ToolStripGripStyle.Hidden;
-            m_toolStrip.RenderMode = ToolStripRenderMode.System;
-            m_toolStrip.Renderer = new CustomToolStripSystemRenderer();
-            m_toolStrip.AutoSize = true;
+		private void InitializeComponents()
+		{
+      for (int i = 0; i < 5; ++i) {
+        m_tool_strips[i] = new() {
+				  GripStyle = ToolStripGripStyle.Hidden,
+				  RenderMode = ToolStripRenderMode.System,
+				  Renderer = new CustomToolStripSystemRenderer(),
+				  AutoSize = true
+			  };
+      }
+      
+			m_nextButton = InitFactory.ToolButton.Create("NextButton", null, OnNextButtonClicked);
+			m_previousButton = InitFactory.ToolButton.Create("PreviousButton", null, OnPreviousButtonClicked);
+		}
 
-            m_toolStripPanel = new ToolStripPanel();
-            m_toolStripPanel.BackColor = SystemColors.Control;
+		public void SetViewMode(ResultsOptions.ViewMode viewMode)
+		{
+			Controls.Clear();
 
-            m_nextButton = InitFactory.ToolButton.Create("NextButton", null, OnNextButtonClicked);
-            m_previousButton = InitFactory.ToolButton.Create("PreviousButton", null, OnPreviousButtonClicked);
+      for (int i = 0; i < 5; ++i) {
+        m_tool_strip_panels[i] = new() {
+				  BackColor = SystemColors.Control
+			  };
+        m_tool_strips[i].Items.Clear();
+      }
+
+			if (viewMode == ResultsOptions.ViewMode.VerticalPairTable) {
+				m_buttonLayout = InitFactory.Layout.Create(1, 9, 0, 0);
+
+        TableLayoutRowStyleCollection styles = m_buttonLayout.RowStyles;
+
+        styles.Add(new RowStyle(SizeType.AutoSize));
+				styles.Add(new RowStyle(SizeType.Percent, 25F));				
+				styles.Add(new RowStyle(SizeType.AutoSize));
+				styles.Add(new RowStyle(SizeType.Percent, 25F));				
+				styles.Add(new RowStyle(SizeType.AutoSize));
+				styles.Add(new RowStyle(SizeType.Percent, 25F));
+        styles.Add(new RowStyle(SizeType.AutoSize));
+				styles.Add(new RowStyle(SizeType.Percent, 25F));
+        styles.Add(new RowStyle(SizeType.AutoSize));
+
+        for (int i = 0; i < 5; ++i) {
+          m_buttonLayout.Controls.Add(m_tool_strip_panels[i], 0, i * 2);
         }
 
-        public void SetViewMode(ResultsOptions.ViewMode viewMode)
-        {
-            Controls.Clear();
-            m_toolStripPanel.Controls.Clear();
-            m_toolStrip.Items.Clear();
-            if (viewMode == ResultsOptions.ViewMode.VerticalPairTable)
-            {
-                m_toolStripPanel.Orientation = Orientation.Vertical;
+				m_imageLayout = InitFactory.Layout.Create(1, 2, 0, 0);
+				m_imageLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+				m_imageLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-                m_buttonLayout = InitFactory.Layout.CreateVerticalCompensatedCenterAlign(0, 5);
-                m_buttonLayout.Controls.Add(m_toolStripPanel, 0, 2);
+				m_mainLayout = InitFactory.Layout.Create(2, 1, 0, 0);
+				m_mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+				m_mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+				m_mainLayout.Controls.Add(m_imageLayout, 0, 0);
+				m_mainLayout.Controls.Add(m_buttonLayout, 1, 0);
+			}
 
-                m_imageLayout = InitFactory.Layout.Create(1, 2, 0, 0);
-                m_imageLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-                m_imageLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-                
-                m_mainLayout = InitFactory.Layout.Create(2, 1, 0, 0);
-                m_mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-                m_mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-                m_mainLayout.Controls.Add(m_imageLayout, 0, 0);
-                m_mainLayout.Controls.Add(m_buttonLayout, 1, 0);
-            }
-            if (viewMode == ResultsOptions.ViewMode.HorizontalPairTable)
-            {
-                m_toolStripPanel.Orientation = Orientation.Horizontal;
+			if (viewMode == ResultsOptions.ViewMode.HorizontalPairTable) {
+				m_buttonLayout = InitFactory.Layout.Create(9, 1, 0, 0);
 
-                m_buttonLayout = InitFactory.Layout.CreateHorizontalCompensatedCenterAlign(0, 104);
-                m_buttonLayout.Controls.Add(m_toolStripPanel, 2, 0);
+        TableLayoutColumnStyleCollection styles = m_buttonLayout.ColumnStyles;
 
-                m_imageLayout = InitFactory.Layout.Create(2, 1, 0, 0);
-                m_imageLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-                m_imageLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        styles.Add(new ColumnStyle(SizeType.AutoSize));
+				styles.Add(new ColumnStyle(SizeType.Percent, 25F));				
+				styles.Add(new ColumnStyle(SizeType.AutoSize));
+				styles.Add(new ColumnStyle(SizeType.Percent, 25F));				
+				styles.Add(new ColumnStyle(SizeType.AutoSize));
+				styles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        styles.Add(new ColumnStyle(SizeType.AutoSize));
+				styles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        styles.Add(new ColumnStyle(SizeType.AutoSize));
 
-                m_mainLayout = InitFactory.Layout.Create(1, 2, 0, 0);
-                m_mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-                m_mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-                m_mainLayout.Controls.Add(m_imageLayout, 0, 0);
-                m_mainLayout.Controls.Add(m_buttonLayout, 0, 1);
-            }
-            m_imageLayout.CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset;
-            m_buttonLayout.AutoSize = true;
-            AddItems(viewMode);
-            m_toolStripPanel.Controls.Add(m_toolStrip);
-            m_toolStripPanel.Size = new Size(m_toolStrip.PreferredSize.Width + 1, m_toolStrip.PreferredSize.Height + 1);
-            Controls.Add(m_mainLayout);
+				for (int i = 0; i < 5; ++i) {
+          m_buttonLayout.Controls.Add(m_tool_strip_panels[i], i * 2, 0);
         }
 
-        protected abstract void AddItems(ResultsOptions.ViewMode viewMode);
+				m_imageLayout = InitFactory.Layout.Create(2, 1, 0, 0);
+				m_imageLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+				m_imageLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+
+				m_mainLayout = InitFactory.Layout.Create(1, 2, 0, 0);
+				m_mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+				m_mainLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+				m_mainLayout.Controls.Add(m_imageLayout, 0, 0);
+				m_mainLayout.Controls.Add(m_buttonLayout, 0, 1);
+			}
+
+			m_imageLayout.CellBorderStyle = TableLayoutPanelCellBorderStyle.Inset;
+			m_buttonLayout.AutoSize = true;
+			AddItems(viewMode);
+
+      for (int i = 0; i < 5; ++i) {
+        ToolStripPanel panel = m_tool_strip_panels[i];
+        ToolStrip strip = m_tool_strips[i];
+
+        if (viewMode == ResultsOptions.ViewMode.VerticalPairTable) {
+          panel.Orientation = Orientation.Vertical;
+				}
+        if (viewMode == ResultsOptions.ViewMode.HorizontalPairTable) {
+					panel.Orientation = Orientation.Horizontal;
+				}
+				panel.Controls.Add(strip);
+				panel.Size = new Size(strip.PreferredSize.Width + 1, strip.PreferredSize.Height + 1);
+			}
+
+      Controls.Add(m_mainLayout);
+		}
+
+		protected abstract void AddItems(ResultsOptions.ViewMode viewMode);
 
         private void OnNextButtonClicked(object sender, System.EventArgs e)
         {

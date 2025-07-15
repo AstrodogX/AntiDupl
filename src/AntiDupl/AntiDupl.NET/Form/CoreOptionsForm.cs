@@ -51,7 +51,6 @@ namespace AntiDupl.NET
         private CoreOptions m_oldCoreOptions;
         private CoreOptions m_newCoreOptions;
         private CoreOptions m_defaultCoreOptions;
-        private ResultsOptions m_oldResultsOptions;
 
         private Button m_okButton;
         private Button m_cancelButton;
@@ -99,6 +98,7 @@ namespace AntiDupl.NET
         private LabeledIntegerEdit m_resultCountMaxLabeledIntegerEdit;
         private LabeledComboBox m_ignoreFrameWidthLabeledComboBox;
         private CheckBox m_useLibJpegTurboCheckBox;
+    private LabeledTextEdit m_diffTool;
 
         private TabPage m_highlightTabPage;
         private CheckBox m_highlightDifferenceCheckBox;
@@ -124,7 +124,6 @@ namespace AntiDupl.NET
             m_oldCoreOptions = coreOptions; //old options - cancel
             m_newCoreOptions = m_oldCoreOptions.Clone();  //new created options
             m_defaultCoreOptions = new CoreOptions(m_core, m_options.onePath); //default options
-            m_oldResultsOptions = m_options.resultsOptions.Clone();
             InitializeComponent();
             UpdateStrings();
             GetOptions();
@@ -386,6 +385,9 @@ namespace AntiDupl.NET
 
             m_useLibJpegTurboCheckBox = InitFactory.CheckBox.Create(OnOptionChanged);
             advancedTableLayoutPanel.Controls.Add(m_useLibJpegTurboCheckBox, 0, 10);
+
+      m_diffTool = new LabeledTextEdit(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT, OnOptionChanged);
+      advancedTableLayoutPanel.Controls.Add(m_diffTool, 0, 11);
         }
 
         private void InitilizeHighlightTabPage()
@@ -462,29 +464,17 @@ namespace AntiDupl.NET
             UpdateHighlightItemsEnabling();
         }
 
-        private void OnHighlightChanged(object sender, EventArgs e)
-        {
-            if (m_inited)
-            {
-                m_options.resultsOptions.HighlightDifference = m_highlightDifferenceCheckBox.Checked;
-                m_options.resultsOptions.DifferenceThreshold = m_difrentValue.Value;
-                m_options.resultsOptions.NotHighlightIfFragmentsMoreThan = m_notHighlightIfFragmentsMoreThemCheckBox.Checked;
-                m_options.resultsOptions.NotHighlightMaxFragments = m_maxFragmentsForDisableHighlightLabeledIntegerEdit.Value;
-                m_options.resultsOptions.HighlightAllDifferences = m_highlightAllDifferencesCheckBox.Checked;
-                m_options.resultsOptions.MaxFragmentsForHighlight = m_maxFragmentsForHighlightLabeledIntegerEdit.Value;
-                m_options.resultsOptions.AmountOfFragmentsOnX = m_amountOfFragmentsOnXLabeledIntegerEdit.Value;
-                m_options.resultsOptions.AmountOfFragmentsOnY = m_amountOfFragmentsOnYLabeledIntegerEdit.Value;
-                m_options.resultsOptions.NormalizedSizeOfImage = m_normalizedSizeOfImageLabeledIntegerEdit.Value;
-                m_options.resultsOptions.PenThickness = m_penThicknessLabeledIntegerEdit.Value;
-                UpdateHighlightItemsEnabling();
-                m_options.resultsOptions.RaiseEventOnHighlightDifferenceChange();
-            }
-        }
+		private void OnHighlightChanged(object sender, EventArgs e)
+		{
+			if (m_inited) {
+				UpdateHighlightItemsEnabling();
+			}
+		}
 
-        /// <summary>
-        /// Проверка возмодных состояний настроек.
-        /// </summary>
-        private void UpdateHighlightItemsEnabling()
+		/// <summary>
+		/// Проверка возмодных состояний настроек.
+		/// </summary>
+		private void UpdateHighlightItemsEnabling()
         {
             if (m_highlightDifferenceCheckBox.Checked)
             {
@@ -797,22 +787,37 @@ namespace AntiDupl.NET
             }
         }
 
-        private void OnOkButtonClick(object sender, EventArgs e)
-        {
-            SetOptions();
-            m_newCoreOptions.CopyTo(ref m_oldCoreOptions);
-            m_oldCoreOptions.Validate(m_core, m_options.onePath);
-            m_options.Change();
-            Close();
-        }
+		private void OnOkButtonClick(object sender, EventArgs e)
+		{
+			SetOptions();
 
-        private void OnCancelButtonClick(object sender, EventArgs e)
-        {
-            m_options.resultsOptions = m_oldResultsOptions;
-            Close();
-        }
+			ResultsOptions results_options = m_options.resultsOptions;
 
-        private void OnSetDefaultButtonClick(object sender, EventArgs e)
+			results_options.HighlightDifference = m_highlightDifferenceCheckBox.Checked;
+			results_options.DifferenceThreshold = m_difrentValue.Value;
+			results_options.NotHighlightIfFragmentsMoreThan = m_notHighlightIfFragmentsMoreThemCheckBox.Checked;
+			results_options.NotHighlightMaxFragments = m_maxFragmentsForDisableHighlightLabeledIntegerEdit.Value;
+			results_options.HighlightAllDifferences = m_highlightAllDifferencesCheckBox.Checked;
+			results_options.MaxFragmentsForHighlight = m_maxFragmentsForHighlightLabeledIntegerEdit.Value;
+			results_options.AmountOfFragmentsOnX = m_amountOfFragmentsOnXLabeledIntegerEdit.Value;
+			results_options.AmountOfFragmentsOnY = m_amountOfFragmentsOnYLabeledIntegerEdit.Value;
+			results_options.NormalizedSizeOfImage = m_normalizedSizeOfImageLabeledIntegerEdit.Value;
+			results_options.PenThickness = m_penThicknessLabeledIntegerEdit.Value;
+
+			results_options.RaiseEventOnHighlightDifferenceChange();
+
+			m_newCoreOptions.CopyTo(ref m_oldCoreOptions);
+			m_oldCoreOptions.Validate(m_core, m_options.onePath);
+			m_options.Change();
+			Close();
+		}
+
+		private void OnCancelButtonClick(object sender, EventArgs e)
+		{
+			Close();
+		}
+
+		private void OnSetDefaultButtonClick(object sender, EventArgs e)
         {
             m_defaultCoreOptions.CopyTo(ref m_newCoreOptions);
             m_inited = false;
